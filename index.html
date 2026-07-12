@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XXXVIII Olimpiadas Nacionales - La Pampa 2026</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Babel for JSX compilation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              bebas: ['"Bebas Neue"', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                dark: '#0f172a',
+                accent: '#84cc16',
+                accentHover: '#65a30d',
+                light: '#f8fafc',
+              }
+            },
+            keyframes: {
+              'fade-in-up': {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              'blob': {
+                '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                '100%': { transform: 'translate(0px, 0px) scale(1)' },
+              },
+              'bg-zoom': {
+                '0%': { transform: 'scale(1)' },
+                '50%': { transform: 'scale(1.05)' },
+                '100%': { transform: 'scale(1)' },
+              },
+              'float': {
+                '0%, 100%': { transform: 'translateY(0) translateX(0)' },
+                '33%': { transform: 'translateY(-20px) translateX(15px)' },
+                '66%': { transform: 'translateY(15px) translateX(-20px)' },
+              }
+            },
+            animation: {
+              'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
+              'blob': 'blob 15s infinite',
+              'blob-delayed': 'blob 15s infinite 5s',
+              'bg-zoom': 'bg-zoom 30s ease-in-out infinite',
+              'float': 'float 20s ease-in-out infinite',
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- Import Map for React and Libraries -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.292.0"
+      }
+    }
+    </script>
+
+    <style>
+      html { scroll-behavior: smooth; }
+      body { background-color: #0f172a; color: #f8fafc; }
+      ::-webkit-scrollbar { width: 10px; }
+      ::-webkit-scrollbar-track { background: #0f172a; }
+      ::-webkit-scrollbar-thumb { background: #334155; border-radius: 5px; }
+      ::-webkit-scrollbar-thumb:hover { background: #84cc16; }
+      
+      /* Animación de carga para el Chat de Gemini */
+      .typing-indicator span {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        background-color: #84cc16;
+        border-radius: 50%;
+        margin: 0 2px;
+        animation: typing 1.4s infinite both;
+      }
+      .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+      .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+      .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes typing {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+      }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import ReactDOM from 'react-dom/client';
+        import { 
+            Lock, Menu, X, Calendar, MapPin, Trophy, Bike, Target, Waves, 
+            CircleDot, Users, Activity, Dribbble, Goal, Info, ExternalLink,
+            Instagram, Mail, Phone, Clock, Fish, FileText, ArrowUp, Compass,
+            MessageCircle, Send, Sparkles, Bot, Loader2
+        } from 'lucide-react';
+
+        // --- GEMINI API INTEGRATION (SEGURO) ---
+        // La API key ya NO está acá. Vive en Netlify (variable de entorno GEMINI_API_KEY)
+        // y solo la usa la función serverless en netlify/functions/gemini-chat.js
+
+        const fetchWithRetry = async (url, options, retries = 2) => {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({}));
+                        // Capturamos el error real de la función
+                        throw new Error(`Error ${response.status}: ${errData.error || 'Error del servidor'}`);
+                    }
+                    return await response.json();
+                } catch (e) {
+                    // Si es un error de cliente (400, 403, 404) no reintentamos, cortamos de una.
+                    if (e.message.includes('Error 40') || i === retries - 1) throw e;
+                    await new Promise(res => setTimeout(res, 1000));
+                }
+            }
+        };
+
+        const callGeminiChat = async (history, systemPrompt) => {
+            try {
+                const data = await fetchWithRetry('/.netlify/functions/gemini-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ history, systemPrompt })
+                });
+                return data.text || "Lo siento, tuve un problema al procesar tu solicitud.";
+            } catch (error) {
+                console.error("Detalle del error:", error);
+                if (error.message.includes('Failed to fetch')) {
+                    return "🔌 Error de conexión. Asegúrate de que el sitio esté publicado en Netlify.";
+                }
+                return `⚠️ Ups, algo falló: ${error.message}`;
+            }
+        };
+
+        // COMPONENTE: Cabecera de Sección
+        const SectionHeader = ({ title, children }) => (
+            <div className="w-full bg-slate-800/80 backdrop-blur-md border-y border-white/5 py-8 mb-12 shadow-lg relative z-10">
+                <div className="container mx-auto px-4 text-center flex flex-col items-center">
+                    <h2 className="font-bebas text-4xl md:text-5xl text-white tracking-wider uppercase">{title}</h2>
+                    <div className="w-20 h-1 bg-brand-accent rounded-full mx-auto mt-4"></div>
+                    {children && <div className="mt-6 w-full">{children}</div>}
+                </div>
+            </div>
+        );
+
+        // COMPONENTE: Fondo Animado Interactivo (Parallax + CSS Blobs)
+        const AbstractBackground = () => {
+            const bgRef = useRef(null);
+            const parallax1Ref = useRef(null);
+            const parallax2Ref = useRef(null);
+
+            const particles = React.useMemo(() => {
+                return [...Array(30)].map((_, i) => ({
+                    id: i,
+                    width: Math.random() * 5 + 2,
+                    top: Math.random() * 100,
+                    left: Math.random() * 100,
+                    animationDuration: Math.random() * 10 + 15,
+                    animationDelay: Math.random() * -20,
+                    opacity: Math.random() * 0.4 + 0.1
+                }));
+            }, []);
+
+            useEffect(() => {
+                const handleScroll = () => {
+                    const scrollY = window.scrollY;
+                    if (bgRef.current) bgRef.current.style.transform = `translateY(${scrollY * 0.15}px)`;
+                    if (parallax1Ref.current) parallax1Ref.current.style.transform = `translateY(${scrollY * -0.1}px)`;
+                    if (parallax2Ref.current) parallax2Ref.current.style.transform = `translateY(${scrollY * 0.05}px)`;
+                };
+                window.addEventListener('scroll', handleScroll, { passive: true });
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            return (
+                <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+                    {particles.map(p => (
+                        <div key={p.id} className="absolute rounded-full bg-white animate-float" style={{
+                            width: `${p.width}px`, height: `${p.width}px`, top: `${p.top}%`, left: `${p.left}%`,
+                            opacity: p.opacity, animationDuration: `${p.animationDuration}s`, animationDelay: `${p.animationDelay}s`
+                        }}></div>
+                    ))}
+                    <div ref={parallax1Ref} className="absolute inset-0">
+                        <div className="absolute top-[20%] left-[5%] w-[500px] h-[500px] bg-brand-accent/10 rounded-full blur-[120px] animate-blob"></div>
+                    </div>
+                    <div ref={parallax2Ref} className="absolute inset-0">
+                        <div className="absolute top-[60%] right-[5%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] animate-blob-delayed"></div>
+                        <div className="absolute bottom-[0%] left-[30%] w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[120px] animate-blob" style={{ animationDelay: '2s' }}></div>
+                    </div>
+                    <div ref={bgRef} className="absolute -inset-[100%] opacity-[0.04]" style={{ backgroundImage: `radial-gradient(#fff 1px, transparent 1px)`, backgroundSize: '50px 50px' }}></div>
+                </div>
+            );
+        };
+
+        const Header = () => {
+            const [isScrolled, setIsScrolled] = useState(false);
+            const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+            const navItems = [
+                { label: 'INICIO', href: '#hero' },
+                { label: 'HISTORIA', href: '#historia' },
+                { label: 'SEDES', href: '#sedes' },
+                { label: 'DISCIPLINAS', href: '#disciplinas' },
+                { label: 'CRONOGRAMA', href: '#cronograma' },
+                { label: 'REGLAMENTOS', href: '#reglamentos' },
+                { label: 'TURISMO', href: '#turismo' },
+                { label: 'AUTORIDADES', href: '#autoridades' },
+            ];
+
+            useEffect(() => {
+                const handleScroll = () => setIsScrolled(window.scrollY > 20);
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const handleNavClick = (e, href) => {
+                if (href === '#' || href.startsWith('http')) return;
+                e.preventDefault(); 
+                const element = document.querySelector(href);
+                if (element) {
+                    const headerOffset = 80; 
+                    const elementPosition = element.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                }
+                setMobileMenuOpen(false); 
+            };
+
+            return (
+                <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-brand-dark/95 backdrop-blur-md shadow-lg border-b border-white/10' : 'bg-transparent'}`}>
+                    <div className="container mx-auto px-4 md:px-6">
+                        <div className="flex items-center justify-between py-2">
+                            <a href="#hero" onClick={(e) => handleNavClick(e, '#hero')} className="py-2 z-50">
+                                <img src="https://i.ibb.co/cSdvg9qJ/LOGO-LETRA-BLANCA.png" alt="Logo" className="h-16 md:h-20 lg:h-[100px] w-auto object-contain hover:scale-105 transition-transform duration-300" />
+                            </a>
+                            <nav className="hidden lg:flex items-center gap-4 xl:gap-6">
+                                {navItems.map((item) => (
+                                    <a key={item.label} href={item.href} onClick={(e) => handleNavClick(e, item.href)} className="text-[11px] xl:text-xs font-bold text-slate-300 hover:text-brand-accent transition-colors tracking-widest uppercase cursor-pointer">{item.label}</a>
+                                ))}
+                            </nav>
+                            <button className="lg:hidden text-white z-50" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>{mobileMenuOpen ? <X size={28}/> : <Menu size={28}/>}</button>
+                        </div>
+                    </div>
+                    {mobileMenuOpen && (
+                        <div className="lg:hidden bg-brand-dark border-t border-white/10 absolute w-full shadow-2xl">
+                            <div className="flex flex-col p-4 space-y-4">
+                                {navItems.map((item) => (
+                                    <a key={item.label} href={item.href} onClick={(e) => handleNavClick(e, item.href)} className="font-medium text-slate-300 hover:text-brand-accent uppercase tracking-wider">{item.label}</a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </header>
+            );
+        };
+
+        const Hero = () => {
+            const [timeLeft, setTimeLeft] = useState({ días: 0, horas: 0, min: 0, seg: 0 });
+            
+            useEffect(() => {
+                const calculateTimeLeft = () => {
+                    const eventDate = new Date('2026-11-01T00:00:00').getTime();
+                    const now = new Date().getTime();
+                    const difference = eventDate - now;
+                    if (difference > 0) {
+                        return {
+                            días: Math.floor(difference / (1000 * 60 * 60 * 24)),
+                            horas: Math.floor((difference / (1000 * 60 * 60)) % 24),
+                            min: Math.floor((difference / 1000 / 60) % 60),
+                            seg: Math.floor((difference / 1000) % 60),
+                        };
+                    }
+                    return { días: 0, horas: 0, min: 0, seg: 0 };
+                };
+                setTimeLeft(calculateTimeLeft());
+                const timer = setInterval(calculateTimeLeft, 1000);
+                return () => clearInterval(timer);
+            }, []);
+
+            return (
+                <section id="hero" className="relative min-h-screen flex items-center justify-center pt-28 md:pt-20 overflow-hidden">
+                    <div className="absolute inset-0 z-0 pointer-events-none">
+                        <div className="absolute inset-0 bg-[url('https://i.ibb.co/3y1BYXy3/190130171455g.jpg')] bg-cover bg-center opacity-90 animate-bg-zoom"></div>
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-brand-dark/60 to-brand-dark"></div>
+                    </div>
+
+                    <div className="container mx-auto px-4 z-10 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 relative z-20">
+                        <div className="flex-1 text-center md:text-left">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-accent/30 bg-brand-accent/10 text-brand-accent mb-6 md:mb-8 animate-fade-in-up mx-auto md:mx-0">
+                                <span className="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
+                                <span className="text-xs font-bold uppercase tracking-wider shadow-sm">Evento Nacional</span>
+                            </div>
+                            
+                            <h1 className="font-bebas text-5xl md:text-6xl lg:text-7xl text-white mb-4 md:mb-6 tracking-wide leading-none uppercase drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
+                                XXXVIII Olimpiadas Nacionales de Institutos de Vivienda
+                            </h1>
+                            <p className="font-bebas text-3xl md:text-4xl lg:text-5xl text-brand-accent mb-8 md:mb-12 tracking-widest uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">La Pampa 2026</p>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto md:mx-0 mb-8">
+                                {Object.entries(timeLeft).map(([unit, value]) => (
+                                    <div key={unit} className="bg-slate-900/60 backdrop-blur-md border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center group hover:border-brand-accent/50 transition-colors shadow-lg">
+                                        <span className="font-bebas text-4xl md:text-6xl text-white tabular-nums group-hover:text-brand-accent transition-colors mt-1 drop-shadow-md">{String(value).padStart(2, '0')}</span>
+                                        <span className="text-xs text-slate-300 font-sans font-bold uppercase tracking-widest mt-1">{unit}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 text-slate-200 mb-8 font-sans font-medium">
+                                <div className="flex items-center gap-2 bg-slate-900/70 px-5 py-3 rounded-full border border-white/10 backdrop-blur-md shadow-lg"><Calendar className="text-brand-accent w-5 h-5" /><span>1 - 6 Noviembre 2026</span></div>
+                                <div className="flex items-center gap-2 bg-slate-900/70 px-5 py-3 rounded-full border border-white/10 backdrop-blur-md shadow-lg"><MapPin className="text-brand-accent w-5 h-5" /><span>Santa Rosa, La Pampa</span></div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 animate-fade-in-up delay-300">
+                                <a 
+                                    href="https://olimpicosipv.wnpower.host/Inscripciones/panel" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="w-full sm:w-auto px-8 py-4 bg-brand-accent hover:bg-brand-accentHover text-brand-dark font-sans font-black rounded-xl transition-all transform hover:-translate-y-1 shadow-[0_0_30px_rgba(132,204,22,0.5)] flex items-center justify-center gap-2 uppercase tracking-wide text-center"
+                                >
+                                    Relevamiento Deportivo Preliminar
+                                </a>
+                            </div>
+                        </div>
+                        <div className="flex-1 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xl relative flex justify-center md:justify-end animate-fade-in-up delay-200 mt-8 md:mt-0">
+                            <img src="https://i.ibb.co/0pCNLJp8/PAMPITO-FINAL-SIN-FONDO-2.png" alt="Mascota Oficial Pampito" className="relative w-full h-auto object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:scale-105 transition-transform duration-500 z-10" />
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Historia = () => {
+            const images = [
+                'https://i.ibb.co/MkdqT6YC/20260612124354886-0001.jpg', 
+                'https://i.ibb.co/60325JGr/20260612124440582-0001.jpg', 
+                'https://i.ibb.co/2YZ90c0L/20260612124746539-0001.jpg',
+                'https://i.ibb.co/CpG29thW/20260612125312197.jpg',
+                'https://i.ibb.co/h1RyTbBX/20260612125528745-0001.jpg',
+                'https://i.ibb.co/rK0XKDFG/202606121250345233-001.png'
+            ];
+            const [curr, setCurr] = useState(0);
+            
+            useEffect(() => { 
+                const i = setInterval(() => setCurr(p => (p + 1) % images.length), 4000); 
+                return () => clearInterval(i); 
+            }, []);
+            
+            return (
+                <section id="historia" className="pt-12 relative z-10">
+                    <SectionHeader title="Nuestra Historia" />
+                    <div className="container mx-auto px-4 mb-24">
+                        <div className="grid lg:grid-cols-2 gap-12 items-center">
+                            <div className="relative h-[400px] rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
+                                {images.map((img, i) => (
+                                    <img key={i} src={img} alt="Historia Olimpiadas" className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 transform group-hover:scale-105 ${i === curr ? 'opacity-100' : 'opacity-0'}`} />
+                                ))}
+                                <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-2">
+                                    {images.map((_, idx) => (
+                                        <div key={idx} className={`h-1.5 rounded-full transition-all duration-300 ${idx === curr ? 'bg-brand-accent w-6' : 'bg-white/50 w-2'}`}></div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="space-y-6 font-sans text-slate-300 leading-relaxed text-justify">
+                                <p>Las Olimpíadas Nacionales de Empleados de Institutos de Vivienda son el corazón de un movimiento federal, solidario y profundamente integrador. Este encuentro anual, gestionado y financiado con el esfuerzo de los propios trabajadores de los Institutos Provinciales de Vivienda (IPV/IPAV) de toda la Argentina, nació con un propósito claro: fortalecer los lazos humanos y de camaradería de quienes compartimos la tarea de garantizar el techo propio a las familias argentinas.</p>
+                                <p>Esta historia de integración federal comenzó a rodar en el año 1993, en la provincia de Santa Fe, lugar que albergó la primera edición y encendió una llama olímpica que no paró de crecer, recorriendo el país año tras año.</p>
+                                <p>Del 1 al 6 de noviembre de 2026, la provincia de La Pampa se viste de gala para recibir la XXXVIII Edición. Organizadas localmente por el Instituto Provincial Autárquico de Vivienda (IPAV), estas olimpíadas prometen renovar los valores de sana competencia, compañerismo y arraigo nacional.</p>
+                                <p>A lo largo de seis jornadas intensas, cientos de compañeros de todo el país se encontrarán en nuestras sedes oficiales para compartir momentos inolvidables.</p>
+                                <p className="font-bold text-white text-lg md:text-xl border-l-4 border-brand-accent pl-4 py-2 mt-4 shadow-[0_0_15px_rgba(132,204,22,0.1)]">¡Te esperamos en La Pampa para seguir construyendo comunidad a través del deporte y celebrar juntos la pasión de ser parte del mismo equipo!</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Venues = () => {
+            return (
+                <section id="sedes" className="relative z-10">
+                    <SectionHeader title="Sedes del Evento" />
+                    <div className="container mx-auto px-4 mb-24">
+                        <div className="grid lg:grid-cols-3 gap-8 items-start">
+                            <div className="lg:col-span-1 bg-slate-800/50 border border-white/5 rounded-2xl p-8 hover:border-brand-accent/30 transition-colors shadow-xl">
+                                <h3 className="font-bebas text-3xl text-white mb-6 flex items-center gap-2 tracking-wide"><MapPin className="text-brand-accent mb-1" />Sede Principal</h3>
+                                <div className="space-y-6">
+                                    <div className="relative pl-4 border-l-2 border-brand-accent">
+                                        <h4 className="font-sans font-semibold text-lg text-slate-200">Salón Círculo de Suboficiales</h4>
+                                        <p className="text-slate-400 text-sm">Martin Luther King 2245 (Confirmada)</p>
+                                    </div>
+                                    <div className="relative pl-4 border-l-2 border-slate-700 opacity-60">
+                                        <h4 className="font-sans font-semibold text-lg text-slate-200">Resto de Sedes Deportivas</h4>
+                                        <p className="text-slate-400 text-sm italic">Ver listado en cada disciplina</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="lg:col-span-2 h-[500px] rounded-2xl overflow-hidden shadow-2xl border border-white/10 relative group">
+                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3202.0461876527585!2d-64.2758197!3d-36.6251433!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95c2cd1776953465%3A0xc9b0c9508dfd5569!2sC%C3%ADrculo%20de%20Suboficiales%20y%20Agentes!5e0!3m2!1ses!2sar!4v1700000000000!5m2!1ses!2sar" width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" className="grayscale hover:grayscale-0 transition-all duration-700" title="Mapa de Sedes"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const disciplinesData = [
+            { name: 'Carrera de Obstáculos', icon: <Activity size={32} />, categories: ['Libres', 'Por Equipos'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.ibb.co/355Jkbzj/OBSTACULOS.png' },
+            { name: 'Fútbol (5 y 8)', icon: <Goal size={32} />, categories: ['Libres', 'Veteranos (+40)', 'Senior (+50)'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.imgur.com/UjsD6Yd.jpg' },
+            { name: 'Voley', icon: <Trophy size={32} />, categories: ['Femenino', 'Masculino', 'Mixto'], venues: ['Club Guardia del Monte (Bv Brown 1188, Toay)'], image: 'https://i.imgur.com/BDgf7sM.jpg' },
+            { name: 'Beach Voley', icon: <Waves size={32} />, categories: ['Femenino', 'Masculino', 'Mixto'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.ibb.co/VY1HJtym/BEACH-VOLLEY.png' },
+            { name: 'Básquet (3x3 y 5x5)', icon: <Dribbble size={32} />, categories: ['Libres', 'Veteranos'], venues: ['Polideportivo Butaló'], image: 'https://i.imgur.com/ePNN4Mv.jpg' },
+            { name: 'Natación', icon: <Waves size={32} />, categories: ['Libres', 'Postas 4x50'], venues: ['A Confirmar'], image: 'https://i.imgur.com/QRjl0VY.jpg' },
+            { name: 'MTB', icon: <Bike size={32} />, categories: ['Cross Country', 'Rally'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.imgur.com/cMHIZtw.jpg' },
+            { name: 'Running', icon: <Activity size={32} />, categories: ['5K Participativo', '10K Competitivo'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.imgur.com/4ObhQ5b.jpg' },
+            { name: 'Truco', icon: <Users size={32} />, categories: ['Parejas'], venues: ['Círculo de Sub Oficiales y Agentes (Martín Luther King 2245, Santa Rosa)'], image: 'https://i.ibb.co/qYpXnfLL/TRUCO02.png' },
+            { name: 'Tenis de Mesa', icon: <CircleDot size={32} />, categories: ['Individuales', 'Dobles'], venues: ['Joaquín Ferro 730, Santa Rosa'], image: 'https://i.imgur.com/9E7e5Fa.jpg' },
+            { name: 'Padel', icon: <Target size={32} />, categories: ['Caballeros', 'Damas'], venues: ['Cristal Padel (M. Varela 1671, Santa Rosa)'], image: 'https://i.imgur.com/iGZHUnE.jpg' },
+            { name: 'Pesca', icon: <Fish size={32} />, categories: ['Libres', 'Por equipos'], venues: ['Club Náutico, Laguna Don Tomás, Santa Rosa'], image: 'https://i.imgur.com/sZzALZa.jpg' },
+            { name: 'Newcom', icon: <Users size={32} />, categories: ['+60 Mixto'], venues: ['Club Sportivo'], image: 'https://i.ibb.co/8D9Rh48C/NEWCOM.png' },
+            { name: 'Ciclismo Calle', icon: <Bike size={32} />, categories: ['Pelotón', 'Contrarreloj'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.ibb.co/V0xCZST2/CICLISMO-RUTA.png' },
+            { name: 'Tenis', icon: <Activity size={32} />, categories: ['Individuales', 'Dobles'], venues: ['Centro Empleado de Comercio (México 1810, Santa Rosa)'], image: 'https://i.ibb.co/21XR5SfG/TENIS.png' },
+            { name: 'Bochas', icon: <CircleDot size={32} />, categories: ['Tríos', 'Parejas'], venues: ['Club Social y Deportivo Barrio Fitte'], image: 'https://i.ibb.co/Xf4HM6My/BOCHAS.png' },
+            { name: 'Tejo', icon: <Target size={32} />, categories: ['Caballeros', 'Damas', 'Mixto'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.ibb.co/zVYvbD7B/TEJO.png' }
+        ];
+
+        const Disciplines = () => {
+            const [selectedDiscipline, setSelectedDiscipline] = useState(null);
+
+            return (
+                <section id="disciplinas" className="relative z-10">
+                    <SectionHeader title="Disciplinas Deportivas" />
+                    <div className="container mx-auto px-4 mb-24">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                            {disciplinesData.map((item) => (
+                                <div key={item.name} onClick={() => setSelectedDiscipline(item)} className="group bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col items-center justify-center gap-5 hover:border-brand-accent hover:bg-slate-800 transition-all duration-500 cursor-pointer relative overflow-hidden shadow-lg transform hover:-translate-y-2 hover:scale-105">
+                                    <div className="absolute inset-0 z-0 opacity-10 pointer-events-none bg-[url('https://i.ibb.co/s9Qn6ddM/rectangular-seamless-blended.jpg')] bg-cover bg-center group-hover:opacity-20 transition-opacity duration-500"></div>
+                                    <div className="absolute inset-0 z-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent pointer-events-none"></div>
+
+                                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-accent bg-brand-accent/10 p-1 rounded-full relative z-10"><Info size={16} /></div>
+                                    <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-2 border-slate-700 group-hover:border-brand-accent transition-all duration-500 shadow-xl bg-slate-800 relative z-10">
+                                        <img src={item.image} alt={item.name} loading="lazy" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out" />
+                                    </div>
+                                    <h3 className="font-bebas text-2xl text-slate-300 group-hover:text-white text-center tracking-wide relative z-10">{item.name}</h3>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    {/* Modal para Disciplina */}
+                    {selectedDiscipline && (
+                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setSelectedDiscipline(null)}></div>
+                            <div className="relative bg-slate-900 w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl animate-fade-in-up border border-white/10">
+                                <button onClick={() => setSelectedDiscipline(null)} className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-white hover:text-black transition-colors"><X size={20} /></button>
+                                <div className="h-64 md:h-96 relative bg-slate-950 flex items-center justify-center">
+                                    <img src={selectedDiscipline.image} alt={selectedDiscipline.name} loading="lazy" className="w-full h-full object-contain" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent pointer-events-none"></div>
+                                    <div className="absolute bottom-6 left-6 md:left-8">
+                                        <div className="inline-block p-3 rounded-xl bg-brand-accent text-brand-dark mb-3 shadow-lg">{selectedDiscipline.icon}</div>
+                                        <h3 className="font-bebas text-4xl md:text-5xl text-white tracking-wide drop-shadow-lg">{selectedDiscipline.name}</h3>
+                                    </div>
+                                </div>
+                                <div className="p-6 md:p-8 grid md:grid-cols-2 gap-8">
+                                    <div>
+                                        <h4 className="text-brand-accent font-sans font-bold uppercase tracking-wider text-sm mb-4">Categorías</h4>
+                                        <div className="flex flex-wrap gap-2">{selectedDiscipline.categories.map((cat, idx) => (<span key={idx} className="px-3 py-1 bg-slate-800 text-slate-200 rounded-full text-sm font-sans border border-slate-700">{cat}</span>))}</div>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-brand-accent font-sans font-bold uppercase tracking-wider text-sm mb-4 flex items-center gap-2"><MapPin size={16} /> Sedes</h4>
+                                        <ul className="space-y-3">
+                                            {selectedDiscipline.venues.map((venue, idx) => (
+                                                <li key={idx} className="flex items-start gap-2 text-sm font-sans leading-tight">
+                                                    <span className="w-1.5 h-1.5 bg-brand-accent rounded-full mt-1.5 flex-shrink-0"></span>
+                                                    {venue === 'A Confirmar' ? (
+                                                        <span className="text-slate-400 italic">{venue}</span>
+                                                    ) : (
+                                                        <a 
+                                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer" 
+                                                            className="text-slate-300 hover:text-brand-accent transition-colors flex items-start gap-1.5 group underline underline-offset-4 decoration-white/10 hover:decoration-brand-accent"
+                                                            title="Ver en Google Maps"
+                                                        >
+                                                            <span className="text-left">{venue}</span>
+                                                            <ExternalLink size={14} className="mt-0.5 flex-shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                        </a>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </section>
+            );
+        };
+
+        const scheduleData = [
+            { day: 'Domingo', date: '01 Nov', activities: [{ title: 'Acreditaciones de delegaciones (A Confirmar)' }, { title: 'Acto inaugural (A Confirmar)' }, { title: 'Cena de bienvenida (A Confirmar)' }] },
+            { day: 'Lunes', date: '02 Nov', activities: [{ title: 'Cronograma y Sedes a Confirmar' }] },
+            { day: 'Martes', date: '03 Nov', activities: [{ title: 'Cronograma y Sedes a Confirmar' }] },
+            { day: 'Miércoles', date: '04 Nov', activities: [{ title: 'Cronograma y Sedes a Confirmar' }] },
+            { day: 'Jueves', date: '05 Nov', activities: [{ title: 'Cronograma y Sedes a Confirmar' }] },
+            { day: 'Viernes', date: '06 Nov', activities: [{ title: 'Día libre y Cena de despedida (A Confirmar)' }] }
+        ];
+
+        const Schedule = () => {
+            return (
+                <section id="cronograma" className="relative z-10">
+                    <SectionHeader title="Cronograma de Actividades" />
+                    <div className="container mx-auto px-4 mb-24">
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {scheduleData.map((item, index) => (
+                                <div key={index} className="bg-slate-800/50 border border-white/5 rounded-xl overflow-hidden hover:border-brand-accent/30 transition-all duration-300 group shadow-lg">
+                                    <div className="bg-slate-800 p-4 border-b border-white/5 flex justify-between items-center group-hover:bg-slate-700/50 transition-colors">
+                                        <span className="font-bebas text-2xl text-white tracking-wide mt-1">{item.day}</span>
+                                        <span className="text-brand-accent font-sans font-bold bg-brand-accent/10 px-3 py-1 rounded-full text-sm">{item.date}</span>
+                                    </div>
+                                    <div className="p-5 space-y-6">
+                                        {item.activities.map((act, actIndex) => (
+                                            <div key={actIndex} className="relative pl-6 border-l border-slate-700">
+                                                <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-600 group-hover:bg-brand-accent transition-colors"></div>
+                                                <div className="flex flex-col">
+                                                    {act.time && (
+                                                        <div className="flex items-center gap-2 text-xs font-sans font-semibold text-slate-400 mb-1">
+                                                            <Clock size={12} />
+                                                            {act.time}
+                                                        </div>
+                                                    )}
+                                                    <h4 className="text-slate-200 font-sans font-medium leading-tight mb-1">{act.title}</h4>
+                                                    {act.location && (<div className="flex items-center gap-1.5 text-xs font-sans text-slate-500 mt-1"><MapPin size={10} />{act.location}</div>)}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Rules = () => {
+            return (
+                <section id="reglamentos" className="relative z-10">
+                    <SectionHeader title="Reglamentos Oficiales">
+                        <p className="font-sans text-slate-400 max-w-2xl mx-auto">Toda la documentación, bases, condiciones y reglas para participar de las Olimpiadas 2026.</p>
+                    </SectionHeader>
+                    <div className="container mx-auto px-4 mb-24">
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-brand-accent/30 hover:border-brand-accent rounded-3xl p-8 md:p-12 flex flex-col items-center text-center shadow-[0_0_40px_rgba(132,204,22,0.1)] transition-all duration-500 relative overflow-hidden group">
+                                <div className="absolute -right-10 -top-10 text-brand-accent/5 group-hover:text-brand-accent/10 transition-colors duration-700 transform group-hover:scale-110 group-hover:rotate-12 pointer-events-none">
+                                    <FileText size={250} />
+                                </div>
+                                
+                                <div className="w-20 h-20 bg-brand-accent/10 text-brand-accent rounded-2xl flex items-center justify-center mb-8 relative z-10 border border-brand-accent/20 group-hover:bg-brand-accent group-hover:text-brand-dark transition-colors duration-500">
+                                    <FileText size={40} />
+                                </div>
+                                
+                                <h3 className="font-bebas text-4xl md:text-5xl text-white mb-4 relative z-10 tracking-wide">Carpeta de Reglamentos</h3>
+                                
+                                <p className="font-sans text-slate-300 text-lg mb-10 max-w-2xl mx-auto relative z-10 leading-relaxed">
+                                    Accedé a nuestra carpeta compartida oficial para leer o descargar el <strong className="text-white">Reglamento General</strong> y los <strong className="text-white">Reglamentos Específicos</strong> de cada una de las disciplinas deportivas de esta edición.
+                                </p>
+                                
+                                <a href="https://drive.google.com/drive/folders/1oOfipr-_JcgXhGb3te9ro3Km5GGkURfm?usp=sharing" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 bg-brand-accent hover:bg-brand-accentHover text-brand-dark font-sans font-black text-lg py-5 px-8 md:px-12 rounded-xl transition-all shadow-[0_0_20px_rgba(132,204,22,0.3)] hover:shadow-[0_0_30px_rgba(132,204,22,0.5)] transform hover:-translate-y-1 relative z-10">
+                                    <ExternalLink size={24} />
+                                    <span>ACCEDER A LA CARPETA</span>
+                                </a>
+                                
+                                <div className="mt-8 flex items-center gap-2 font-sans text-sm text-slate-500 relative z-10 bg-slate-950/50 py-2 px-5 rounded-full border border-white/5">
+                                    <Info size={16} className="text-brand-accent" />
+                                    <span>Se abrirá una nueva pestaña hacia Google Drive</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const tourismData = [
+            { name: 'Parque Recreativo Laguna Don Tomás', location: 'Santa Rosa', description: 'En el corazón de la capital. Ideal para caminatas, deportes acuáticos, picnics y disfrutar de los hermosos atardeceres pampeanos.', link: 'https://www.santarosa.gob.ar/parque-laguna-don-tomas-hidropedales-el-salitrero-un-cielo-iluminado-musica-y-mas-de-12-000-personas-en-la-inauguracion-de-las-obras-integrales/', image: ['https://i.ibb.co/VptFYQRk/Whats-App-Image-2025-12-28-at-23-13-53-1-800x449-jpeg.webp', 'https://i.ibb.co/s9Bwn43f/Whats-App-Image-2025-12-26-at-12-40-08.jpg', 'https://i.ibb.co/hJqFg1s0/eb79523c27d555b5a4b896ebc396783f.jpg', 'https://i.ibb.co/VpmJnJHm/2384.jpg'] },
+            { name: 'Reserva Natural Parque Luro', location: 'A 35 km de Santa Rosa', description: 'Santuario natural que alberga el histórico Castillo, senderos interpretativos y una gran diversidad de flora y fauna autóctona.', link: 'https://turismo.lapampa.gob.ar/visitas-a-la-reserva-natural-parque-luro.html', image: ['https://i.ibb.co/gZPsg8dJ/museo-el-castillo.jpg', 'https://i.ibb.co/bg1Hk8NH/49b90ac3-2dff-4e9d-bf78-b9cf8ada0c37.jpg', 'https://i.ibb.co/Y7QxGsfs/da33da7e-7421-42c7-ba8c-6755b87ccc37.jpg'] },
+            { name: 'Parque Acuático Winifreda', location: 'A 45 km de Santa Rosa', description: 'Diversión asegurada para toda la familia con piscinas, toboganes, hidromasajes y amplios espacios verdes.', link: 'https://www.parqueacuaticowinifreda.com.ar/', image: ['https://i.ibb.co/BVz0b15b/615337000-1330430245778979-3779717386679240180-n.jpg', 'https://i.ibb.co/5WbKMB8c/parque-acuatico-2.jpg', 'https://i.ibb.co/xtnG6KDB/1733946258171.jpg'] },
+            { name: 'Casino Club', location: 'Santa Rosa', description: 'El mayor centro de entretenimiento de la provincia, con espectáculos en vivo, slots, mesas de juego y excelente gastronomía.', link: 'https://www.casino-club.com.ar/lp-santarosa.html', image: ['https://i.ibb.co/xSJXwmmT/casino-club-santa-rosa.jpg', 'https://i.ibb.co/N6HW14th/int-sr.jpg', 'https://i.ibb.co/CdhCJg4/sr2.jpg'] },
+            { name: 'Parque Lineal Santa Rosa', location: 'Santa Rosa', description: 'Un extenso y moderno corredor verde ideal para el esparcimiento, actividades recreativas y paseos en bicicleta o caminando.', link: 'https://www.youtube.com/watch?v=OMOfX3LD86o&t=24s', image: ['https://i.ibb.co/j95kYf3K/292780.jpg', 'https://i.ibb.co/391CKnRK/Sin-t-tulo.png', 'https://i.ibb.co/hR9V5Gyx/Whats-App-Image-2025-12-11-at-12-03-42.jpg'] },
+            { name: 'Parque Nacional Lihué Calel', location: 'A 230 km de Santa Rosa', description: 'Conocido como las "Sierras de la Vida". Un oasis geológico y biológico único con arte rupestre y paisajes imponentes.', link: 'https://pnlihuecalel.com/', image: ['https://i.ibb.co/XfFnnZDN/3577-img.jpg', 'https://i.ibb.co/XxSKMmXG/Lihue-Calel-02.jpg', 'https://i.ibb.co/xSMLdQp2/5e8ac552-9298-43ba-868f-96c5258dd481.jpg'] }
+        ];
+
+        const TourismCard = ({ item }) => {
+            const images = Array.isArray(item.image) ? item.image : [item.image];
+            const [currentImage, setCurrentImage] = useState(0);
+
+            useEffect(() => {
+                if (images.length > 1) {
+                    const interval = setInterval(() => {
+                        setCurrentImage((prev) => (prev + 1) % images.length);
+                    }, 3500); 
+                    return () => clearInterval(interval);
+                }
+            }, [images.length]);
+
+            const CardWrapper = item.link ? 'a' : 'div';
+            const linkProps = item.link ? { href: item.link, target: "_blank", rel: "noopener noreferrer" } : {};
+
+            return (
+                <CardWrapper {...linkProps} className={`group bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-brand-accent/50 transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(132,204,22,0.15)] flex flex-col ${item.link ? 'cursor-pointer' : ''}`}>
+                    <div className="h-56 overflow-hidden relative">
+                        <div className="absolute inset-0 bg-slate-900/30 group-hover:bg-transparent transition-colors z-10 duration-500 pointer-events-none"></div>
+                        {images.map((img, idx) => (
+                            <img key={idx} src={img} alt={`${item.name} - ${idx + 1}`} loading="lazy" className={`absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-all duration-1000 ease-in-out ${idx === currentImage ? 'opacity-100 z-0' : 'opacity-0 -z-10'}`} />
+                        ))}
+                        {images.length > 1 && (
+                            <div className="absolute bottom-3 left-0 right-0 z-20 flex justify-center gap-1.5">
+                                {images.map((_, idx) => (
+                                    <div key={idx} className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentImage ? 'bg-brand-accent w-4' : 'bg-white/50 w-1.5'}`}></div>
+                                ))}
+                            </div>
+                        )}
+                        <div className="absolute top-4 right-4 z-20 bg-slate-900/80 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl">
+                            <MapPin size={12} className="text-brand-accent" />
+                            <span className="font-sans text-xs font-semibold text-slate-200">{item.location}</span>
+                        </div>
+                    </div>
+                    <div className="p-6 flex-grow flex flex-col bg-slate-900 z-20 relative">
+                        <div className="flex justify-between items-start mb-3">
+                            <h3 className="font-bebas text-2xl text-white group-hover:text-brand-accent transition-colors leading-tight tracking-wide">{item.name}</h3>
+                            {item.link && <ExternalLink size={18} className="text-slate-500 group-hover:text-brand-accent transition-colors flex-shrink-0 ml-2" />}
+                        </div>
+                        <p className="font-sans text-slate-400 text-sm leading-relaxed flex-grow">{item.description}</p>
+                    </div>
+                </CardWrapper>
+            );
+        };
+
+        const TourismPlanner = () => {
+            const [prompt, setPrompt] = useState("");
+            const [plan, setPlan] = useState(null);
+            const [loading, setLoading] = useState(false);
+
+            const handleGeneratePlan = async () => {
+                if (!prompt.trim()) return;
+                setLoading(true);
+                
+                const systemPrompt = `Eres un experto guía turístico de La Pampa. Los atractivos principales son: ${tourismData.map(t => t.name + " (" + t.location + ")").join(", ")}. Basado en las preferencias de tiempo y gusto del usuario, sugiérele un breve plan ideal en 2 o 3 viñetas cortas, mencionando al menos un atractivo de la lista o cercano a Santa Rosa. Usa un tono entusiasta y emojis. Formato: responde directamente con el plan en texto plano amigable.`;
+                
+                const history = [{ role: 'user', parts: [{ text: prompt }] }];
+                const response = await callGeminiChat(history, systemPrompt);
+                
+                setPlan(response);
+                setLoading(false);
+            };
+
+            return (
+                <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl border border-brand-accent/20 p-6 md:p-8 mb-16 shadow-[0_0_30px_rgba(132,204,22,0.1)] relative overflow-hidden group">
+                    <div className="absolute -top-10 -right-10 text-brand-accent/10 group-hover:text-brand-accent/20 transition-colors pointer-events-none transform rotate-12">
+                        <Compass size={200} />
+                    </div>
+                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                        <div className="flex-1 w-full">
+                            <h3 className="font-bebas text-3xl md:text-4xl text-white mb-2 flex items-center gap-2">
+                                <Sparkles className="text-brand-accent" size={28} /> Generador de Itinerario IA
+                            </h3>
+                            <p className="text-slate-400 font-sans mb-4 text-sm md:text-base">
+                                ¿No sabes qué visitar? Cuéntanos cuánto tiempo tienes (ej. "tengo la tarde del martes libre") y qué te gusta (ej. "naturaleza", "lugares históricos", "descansar"), y nuestra IA te armará un plan a medida.
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <input 
+                                    type="text" 
+                                    placeholder="Ej: Tengo 3 horas libres y busco naturaleza..." 
+                                    value={prompt}
+                                    onChange={(e) => setPrompt(e.target.value)}
+                                    className="flex-1 bg-slate-950 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-brand-accent placeholder-slate-600 transition-colors"
+                                    onKeyDown={(e) => e.key === 'Enter' && handleGeneratePlan()}
+                                />
+                                <button 
+                                    onClick={handleGeneratePlan}
+                                    disabled={loading || !prompt.trim()}
+                                    className="bg-brand-accent hover:bg-brand-accentHover disabled:opacity-50 disabled:cursor-not-allowed text-brand-dark font-sans font-bold px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
+                                >
+                                    {loading ? <Loader2 size={20} className="animate-spin" /> : <Sparkles size={20} />}
+                                    ✨ SUGERIR PLAN
+                                </button>
+                            </div>
+                        </div>
+                        {plan && (
+                            <div className="flex-1 w-full bg-slate-950/50 backdrop-blur border border-brand-accent/30 p-5 rounded-xl animate-fade-in-up shadow-inner text-sm text-slate-300 font-sans whitespace-pre-line leading-relaxed">
+                                {plan}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const Tourism = () => {
+            return (
+                <section id="turismo" className="relative z-10">
+                    <SectionHeader title="Turismo y Recreación">
+                        <p className="font-sans text-slate-400 max-w-2xl mx-auto mb-6">Descubrí los atractivos imperdibles que La Pampa tiene para ofrecerte en tus tiempos libres.</p>
+                        <a href="https://turismo.lapampa.gob.ar/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-brand-accent/50 text-white font-sans font-semibold py-3 px-6 rounded-full transition-all duration-300 group shadow-md">
+                            <Compass size={18} className="text-brand-accent group-hover:animate-spin-slow" />
+                            Visitar Portal Oficial de Turismo
+                            <ExternalLink size={14} className="ml-1 opacity-50 group-hover:opacity-100" />
+                        </a>
+                    </SectionHeader>
+                    <div className="container mx-auto px-4 mb-24">
+                        <TourismPlanner />
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {tourismData.map((item, index) => (
+                                <TourismCard key={index} item={item} />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const authoritiesData = [
+            { name: 'Ing. Walter Vargas', role: 'Presidente', image: 'https://i.ibb.co/Tx5RKX9B/Gemini-Generated-Image-bebzbxbebzbxbebz-1-1-1-1.png', position: 'object-[50%_20%]' },
+            { name: 'Claudio Erro', role: 'Vicepresidente', image: 'https://i.ibb.co/3yHz7Rf4/Gemini-Generated-Image-tkvzf1tkvzf1tkvz-1.png', position: 'object-[50%_30%]' },
+            { name: 'Graciela Ruiz', role: 'Secretaría General', image: 'https://i.ibb.co/B5CZ3Z8M/Gemini-Generated-Image-jlx7tijlx7tijlx7.png', position: 'object-top' },
+            { name: 'CPN Guadalupe Villagra / Ariel Zentner', role: 'Tesorería', image: 'https://i.ibb.co/NdLY92Hs/Gemini-Generated-Image-i82s5ii82s5ii82s.jpg', position: 'object-[50%_20%]' },
+            { name: 'Abog. Joan Moyano', role: 'Asesoría Legal', image: 'https://i.ibb.co/8n6tZTb1/Gemini-Generated-Image-7dg3b07dg3b07dg3-1-1.png', position: 'object-[50%_20%]' },
+            { name: 'A. Prog. Ana Oddone', role: 'Logística', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' },
+            { name: 'Arq. Lucas Roldan', role: 'Comunicación', image: 'https://i.ibb.co/fYsG8sTj/Gemini-Generated-Image-5yavnr5yavnr5yav.png', position: 'object-[50%_20%]' },
+            { name: 'Arq. Ezequiel Alcaraz', role: 'Imagen', image: 'https://i.ibb.co/qFrwxkcS/Gemini-Generated-Image-qp533bqp533bqp53-1.png', position: 'object-[50%_20%]' },
+            { name: 'Mariana Miranda', role: 'Ceremonial y Protocolo', image: 'https://i.ibb.co/hRQJqCWc/Chat-GPT-Image-29-jun-2026-12-13-25-p-m.png', position: 'object-center' },
+            { name: 'Prof. Emiliano Rodriguez', role: 'Deportes', image: 'https://i.ibb.co/NMrzJQv/Whats-App-Image-2026-02-25-at-09-35-37.jpg', position: 'object-[50%_20%]' },
+            { name: 'María Diez', role: 'Olimpiadas Solidarias', image: 'https://i.ibb.co/MDNwkxW1/Whats-App-Image-2026-03-02-at-10-42-20.jpg', position: 'object-[50%_20%]' },
+            { name: 'A. Prog. Francisco Piu', role: 'Catering y Eventos', image: 'https://i.ibb.co/fzGs4SyJ/Whats-App-Image-2026-02-25-at-09-32-39.jpg', position: 'object-[50%_20%]' },
+        ];
+
+        const Authorities = () => {
+            const authoritiesData = [
+                { name: 'Ing. Walter Vargas', role: 'Presidente', image: 'https://i.ibb.co/Tx5RKX9B/Gemini-Generated-Image-bebzbxbebzbxbebz-1-1-1-1.png', position: 'object-[50%_20%]' },
+                { name: 'Claudio Erro', role: 'Vicepresidente', image: 'https://i.ibb.co/3yHz7Rf4/Gemini-Generated-Image-tkvzf1tkvzf1tkvz-1.png', position: 'object-[50%_30%]' },
+                { name: 'Graciela Ruiz', role: 'Secretaría General', image: 'https://i.ibb.co/B5CZ3Z8M/Gemini-Generated-Image-jlx7tijlx7tijlx7.png', position: 'object-top' },
+                { name: 'CPN Guadalupe Villagra / Ariel Zentner', role: 'Tesorería', image: 'https://i.ibb.co/NdLY92Hs/Gemini-Generated-Image-i82s5ii82s5ii82s.jpg', position: 'object-[50%_20%]' },
+                { name: 'Abog. Joan Moyano', role: 'Asesoría Legal', image: 'https://i.ibb.co/8n6tZTb1/Gemini-Generated-Image-7dg3b07dg3b07dg3-1-1.png', position: 'object-[50%_20%]' },
+                { name: 'A. Prog. Ana Oddone', role: 'Centro de datos', image: 'https://i.ibb.co/ZRdPzxqd/Whats-App-Image-2026-06-29-at-11-58-13.jpg', position: 'object-top' },
+                { name: 'Arq. Lucas Roldan', role: 'Comunicación', image: 'https://i.ibb.co/fYsG8sTj/Gemini-Generated-Image-5yavnr5yavnr5yav.png', position: 'object-[50%_20%]' },
+                { name: 'Arq. Ezequiel Alcaraz', role: 'Imagen', image: 'https://i.ibb.co/qFrwxkcS/Gemini-Generated-Image-qp533bqp533bqp53-1.png', position: 'object-[50%_20%]' },
+                { name: 'Mariana Miranda', role: 'Ceremonial y Protocolo', image: 'https://i.ibb.co/hRQJqCWc/Chat-GPT-Image-29-jun-2026-12-13-25-p-m.png', position: 'object-center' },
+                { name: 'Prof. Emiliano Rodriguez', role: 'Deportes', image: 'https://i.ibb.co/NMrzJQv/Whats-App-Image-2026-02-25-at-09-35-37.jpg', position: 'object-[50%_20%]' },
+                { name: 'María Diez', role: 'Olimpiadas Solidarias', image: 'https://i.ibb.co/MDNwkxW1/Whats-App-Image-2026-03-02-at-10-42-20.jpg', position: 'object-[50%_20%]' },
+                { name: 'A. Prog. Francisco Piu', role: 'Catering y Eventos', image: 'https://i.ibb.co/fzGs4SyJ/Whats-App-Image-2026-02-25-at-09-32-39.jpg', position: 'object-[50%_20%]' },
+            ];
+
+            const [selectedAuthority, setSelectedAuthority] = useState(null);
+
+            return (
+                <section id="autoridades" className="relative z-10">
+                    <SectionHeader title="Comité Olímpico" />
+                    <div className="container mx-auto px-4 mb-24">
+                        <div className="flex justify-center mb-12">
+                            {authoritiesData.slice(0, 1).map((auth, index) => (
+                                <div key={index} onClick={() => setSelectedAuthority(auth)} className="bg-slate-800/80 backdrop-blur rounded-2xl p-8 flex flex-col items-center text-center border-2 border-brand-accent shadow-[0_0_30px_rgba(132,204,22,0.15)] transform hover:scale-105 transition-all duration-300 max-w-sm w-full cursor-pointer relative group">
+                                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-accent bg-brand-accent/10 p-1.5 rounded-full"><Info size={18} /></div>
+                                    <div className="w-32 h-32 mb-6 rounded-full overflow-hidden border-4 border-slate-700 p-1 group-hover:border-brand-accent transition-colors bg-slate-900">
+                                        <img src={auth.image} alt={auth.name} loading="lazy" className={`w-full h-full object-cover ${auth.position || 'object-center'} rounded-full`} />
+                                    </div>
+                                    <h3 className="font-bebas text-3xl text-white mb-1 tracking-wide">{auth.name}</h3>
+                                    <p className="font-sans text-brand-accent font-bold uppercase text-sm tracking-widest">{auth.role}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {authoritiesData.slice(1).map((auth, index) => (
+                                <div key={index} onClick={() => setSelectedAuthority(auth)} className="group bg-slate-800/50 rounded-xl p-6 flex items-center gap-4 border border-white/5 hover:border-brand-accent/50 hover:bg-slate-700/50 transition-all duration-300 cursor-pointer shadow-lg">
+                                    <div className="w-16 h-16 flex-shrink-0 rounded-full overflow-hidden border border-slate-600 group-hover:border-brand-accent transition-colors bg-slate-900">
+                                        <img src={auth.image} alt={auth.name} loading="lazy" className={`w-full h-full object-cover ${auth.position || 'object-center'} grayscale group-hover:grayscale-0 transition-all duration-500`} />
+                                    </div>
+                                    <div className="text-left flex-grow">
+                                        <h3 className="font-bebas text-2xl text-white leading-tight mb-1 group-hover:text-brand-accent transition-colors tracking-wide mt-1">{auth.name}</h3>
+                                        <p className="font-sans text-slate-400 text-xs font-semibold uppercase tracking-wide group-hover:text-slate-300 transition-colors">{auth.role}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {selectedAuthority && (
+                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setSelectedAuthority(null)}></div>
+                            <div className="relative bg-slate-900 w-full max-w-sm rounded-2xl p-8 shadow-2xl animate-fade-in-up border border-white/10 flex flex-col items-center text-center">
+                                <button onClick={() => setSelectedAuthority(null)} className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-white hover:text-black transition-colors"><X size={20} /></button>
+                                <div className="w-48 h-48 md:w-56 md:h-56 mb-6 rounded-full overflow-hidden border-4 border-brand-accent shadow-[0_0_30px_rgba(132,204,22,0.3)] bg-slate-800">
+                                    <img src={selectedAuthority.image} alt={selectedAuthority.name} className={`w-full h-full object-cover ${selectedAuthority.position || 'object-center'}`} />
+                                </div>
+                                <h3 className="font-bebas text-3xl text-white mb-2 tracking-wide">{selectedAuthority.name}</h3>
+                                <p className="font-sans text-brand-accent font-bold uppercase tracking-widest text-sm">{selectedAuthority.role}</p>
+                            </div>
+                        </div>
+                    )}
+                </section>
+            );
+        };
+
+        const Sponsors = () => {
+            const sponsorsData = [
+                { tier: 'Platino', styles: 'font-bebas text-4xl md:text-5xl text-slate-600 opacity-70 hover:opacity-100 transition-opacity', companies: ['A Confirmar'] },
+                { tier: 'Oro', styles: 'font-bebas text-3xl md:text-4xl text-slate-600 opacity-70 hover:opacity-100 transition-opacity', companies: ['A Confirmar'] },
+                { tier: 'Plata', styles: 'font-bebas text-2xl md:text-3xl text-slate-600 opacity-70 hover:opacity-100 transition-opacity', companies: ['A Confirmar'] },
+                { tier: 'Bronce', styles: 'font-bebas text-xl md:text-2xl text-slate-600 opacity-70 hover:opacity-100 transition-opacity', companies: ['A Confirmar'] }
+            ];
+
+            return (
+                <section id="sponsors" className="relative z-10">
+                    <SectionHeader title="Sponsors Oficiales">
+                        <p className="font-sans text-slate-400 max-w-2xl mx-auto">Empresas e instituciones que hacen posible este evento</p>
+                    </SectionHeader>
+                    <div className="container mx-auto px-4 mb-24">
+                        <div className="flex flex-col gap-16 md:gap-20 max-w-5xl mx-auto">
+                            {sponsorsData.map((category, idx) => (
+                                <div key={idx} className="flex flex-col items-center">
+                                    <h3 className="font-sans text-xs font-bold uppercase tracking-widest mb-8 text-slate-500 border-b border-slate-800 pb-2">
+                                        Categoría {category.tier}
+                                    </h3>
+                                    <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 md:gap-x-20">
+                                        {category.companies.map((company, cIdx) => (
+                                            <div key={cIdx} className="group relative">
+                                                <div className={`cursor-default select-none tracking-wide ${category.styles}`}>
+                                                    {company}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Footer = () => {
+            return (
+                <footer className="bg-black py-12 border-t border-white/10 relative z-10">
+                    <div className="container mx-auto px-4">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+                            <div className="text-center md:text-left">
+                                <h2 className="font-bebas text-3xl text-white tracking-widest uppercase mt-1">Olimpiadas <span className="text-brand-accent">2026</span></h2>
+                                <p className="font-sans text-slate-500 text-sm mt-1">Instituto Provincial de la Vivienda</p>
+                            </div>
+                            <div className="flex gap-6">
+                                <a href="https://www.instagram.com/olimpicosipavlapampa?igsh=MTBvbmNzM3pyeHZ6cQ==" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:text-white hover:bg-brand-accent transition-all"><Instagram size={20} /></a>
+                                <a href="mailto:olimpicoslapampa@gmail.com" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:text-white hover:bg-brand-accent transition-all"><Mail size={20} /></a>
+                                <a href="https://wa.me/5492954516537" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:text-white hover:bg-brand-accent transition-all"><Phone size={20} /></a>
+                            </div>
+                        </div>
+                        <div className="mt-12 pt-8 border-t border-white/5 text-center font-sans text-slate-600 text-sm">
+                            <p>© 2026 Olimpiadas Nacionales de Empleados de Institutos de Vivienda. Todos los derechos reservados.</p>
+                        </div>
+                    </div>
+                </footer>
+            );
+        };
+
+        const App = () => {
+            const [showBackToTop, setShowBackToTop] = useState(false);
+            
+            useEffect(() => {
+                const handleScroll = () => setShowBackToTop(window.scrollY > 400); 
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            return (
+                <div className="min-h-screen flex flex-col text-slate-100 selection:bg-brand-accent selection:text-brand-dark relative">
+                    <AbstractBackground />
+                    <Header />
+                    <main className="flex-grow z-10 relative">
+                        <Hero />
+                        <Historia />
+                        <Venues />
+                        <Disciplines />
+                        <Schedule />
+                        <Rules />
+                        <Tourism />
+                        <Authorities />
+                        <Sponsors />
+                    </main>
+                    <Footer />
+
+                    <button 
+                        onClick={scrollToTop} 
+                        className={`fixed bottom-6 right-6 z-40 p-3 bg-slate-800 hover:bg-brand-accent text-brand-accent hover:text-brand-dark border border-slate-700 hover:border-brand-accent rounded-full shadow-2xl transition-all duration-300 transform ${showBackToTop ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0 pointer-events-none'}`}
+                        aria-label="Volver arriba"
+                    >
+                        <ArrowUp size={24} />
+                    </button>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
