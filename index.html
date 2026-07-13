@@ -4,6 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>XXXVIII Olimpiadas Nacionales - La Pampa 2026</title>
+    <meta name="description" content="XXXVIII Olimpiadas Nacionales de Empleados de Institutos de Vivienda. Del 1 al 6 de noviembre de 2026, Santa Rosa, La Pampa. Deporte, camaradería e integración federal." />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="180x180" href="/assets/favicon-180.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon-180.png" />
+
+    <!-- Open Graph / WhatsApp / Facebook / Instagram -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="XXXVIII Olimpiadas Nacionales - La Pampa 2026" />
+    <meta property="og:description" content="Del 1 al 6 de noviembre de 2026, Santa Rosa, La Pampa. Deporte, camaradería e integración federal entre los Institutos Provinciales de Vivienda de toda Argentina." />
+    <meta property="og:image" content="https://wsrv.nl/?url=https%3A%2F%2Fi.ibb.co%2F3y1BYXy3%2F190130171455g.jpg&w=1200&output=jpg&q=85" />
+    <meta property="og:url" content="https://olimpiadasipav2026.netlify.app/" />
+    <meta property="og:locale" content="es_AR" />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="XXXVIII Olimpiadas Nacionales - La Pampa 2026" />
+    <meta name="twitter:description" content="Del 1 al 6 de noviembre de 2026, Santa Rosa, La Pampa." />
+    <meta name="twitter:image" content="https://wsrv.nl/?url=https%3A%2F%2Fi.ibb.co%2F3y1BYXy3%2F190130171455g.jpg&w=1200&output=jpg&q=85" />
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -105,6 +125,7 @@
         40% { transform: scale(1); }
       }
     </style>
+    <link rel="preconnect" href="https://wsrv.nl">
 </head>
 <body>
     <div id="root"></div>
@@ -116,8 +137,13 @@
             Lock, Menu, X, Calendar, MapPin, Trophy, Bike, Target, Waves, 
             CircleDot, Users, Activity, Dribbble, Goal, Info, ExternalLink,
             Instagram, Mail, Phone, Clock, Fish, FileText, ArrowUp, Compass,
-            MessageCircle, Send, Sparkles, Bot, Loader2
+            MessageCircle, Send, Sparkles, Bot, Loader2, ChevronDown, Search,
+            Trash2, Plus, Medal, LogOut
         } from 'lucide-react';
+
+        // Optimiza imágenes externas (ibb.co, imgur) redimensionando y convirtiendo a WebP
+        // vía wsrv.nl, un proxy de imágenes gratuito. No requiere subir nada de nuevo.
+        const optimizeImg = (url, width = 400) => `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=80`;
 
         // --- GEMINI API INTEGRATION (SEGURO) ---
         // La API key ya NO está acá. Vive en Netlify (variable de entorno GEMINI_API_KEY)
@@ -176,7 +202,7 @@
             const parallax2Ref = useRef(null);
 
             const particles = React.useMemo(() => {
-                return [...Array(30)].map((_, i) => ({
+                return [...Array(15)].map((_, i) => ({
                     id: i,
                     width: Math.random() * 5 + 2,
                     top: Math.random() * 100,
@@ -188,11 +214,17 @@
             }, []);
 
             useEffect(() => {
+                let ticking = false;
                 const handleScroll = () => {
-                    const scrollY = window.scrollY;
-                    if (bgRef.current) bgRef.current.style.transform = `translateY(${scrollY * 0.15}px)`;
-                    if (parallax1Ref.current) parallax1Ref.current.style.transform = `translateY(${scrollY * -0.1}px)`;
-                    if (parallax2Ref.current) parallax2Ref.current.style.transform = `translateY(${scrollY * 0.05}px)`;
+                    if (ticking) return;
+                    ticking = true;
+                    requestAnimationFrame(() => {
+                        const scrollY = window.scrollY;
+                        if (bgRef.current) bgRef.current.style.transform = `translateY(${scrollY * 0.15}px)`;
+                        if (parallax1Ref.current) parallax1Ref.current.style.transform = `translateY(${scrollY * -0.1}px)`;
+                        if (parallax2Ref.current) parallax2Ref.current.style.transform = `translateY(${scrollY * 0.05}px)`;
+                        ticking = false;
+                    });
                 };
                 window.addEventListener('scroll', handleScroll, { passive: true });
                 return () => window.removeEventListener('scroll', handleScroll);
@@ -207,11 +239,11 @@
                         }}></div>
                     ))}
                     <div ref={parallax1Ref} className="absolute inset-0">
-                        <div className="absolute top-[20%] left-[5%] w-[500px] h-[500px] bg-brand-accent/10 rounded-full blur-[120px] animate-blob"></div>
+                        <div className="absolute top-[20%] left-[5%] w-[500px] h-[500px] bg-brand-accent/10 rounded-full blur-[80px] animate-blob"></div>
                     </div>
                     <div ref={parallax2Ref} className="absolute inset-0">
-                        <div className="absolute top-[60%] right-[5%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] animate-blob-delayed"></div>
-                        <div className="absolute bottom-[0%] left-[30%] w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[120px] animate-blob" style={{ animationDelay: '2s' }}></div>
+                        <div className="absolute top-[60%] right-[5%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[80px] animate-blob-delayed"></div>
+                        <div className="absolute bottom-[0%] left-[30%] w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[80px] animate-blob" style={{ animationDelay: '2s' }}></div>
                     </div>
                     <div ref={bgRef} className="absolute -inset-[100%] opacity-[0.04]" style={{ backgroundImage: `radial-gradient(#fff 1px, transparent 1px)`, backgroundSize: '50px 50px' }}></div>
                 </div>
@@ -221,15 +253,22 @@
         const Header = () => {
             const [isScrolled, setIsScrolled] = useState(false);
             const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+            const [institutionalOpen, setInstitutionalOpen] = useState(false);
+            const [mobileInstitutionalOpen, setMobileInstitutionalOpen] = useState(false);
+            const institutionalRef = useRef(null);
 
             const navItems = [
                 { label: 'INICIO', href: '#hero' },
-                { label: 'HISTORIA', href: '#historia' },
                 { label: 'SEDES', href: '#sedes' },
                 { label: 'DISCIPLINAS', href: '#disciplinas' },
                 { label: 'CRONOGRAMA', href: '#cronograma' },
+                { label: 'RESULTADOS', href: '#resultados' },
                 { label: 'REGLAMENTOS', href: '#reglamentos' },
                 { label: 'TURISMO', href: '#turismo' },
+            ];
+
+            const institutionalItems = [
+                { label: 'HISTORIA', href: '#historia' },
                 { label: 'AUTORIDADES', href: '#autoridades' },
             ];
 
@@ -237,6 +276,16 @@
                 const handleScroll = () => setIsScrolled(window.scrollY > 20);
                 window.addEventListener('scroll', handleScroll);
                 return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            useEffect(() => {
+                const handleClickOutside = (e) => {
+                    if (institutionalRef.current && !institutionalRef.current.contains(e.target)) {
+                        setInstitutionalOpen(false);
+                    }
+                };
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
             }, []);
 
             const handleNavClick = (e, href) => {
@@ -250,6 +299,8 @@
                     window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                 }
                 setMobileMenuOpen(false); 
+                setInstitutionalOpen(false);
+                setMobileInstitutionalOpen(false);
             };
 
             return (
@@ -257,12 +308,25 @@
                     <div className="container mx-auto px-4 md:px-6">
                         <div className="flex items-center justify-between py-2">
                             <a href="#hero" onClick={(e) => handleNavClick(e, '#hero')} className="py-2 z-50">
-                                <img src="https://i.ibb.co/cSdvg9qJ/LOGO-LETRA-BLANCA.png" alt="Logo" className="h-16 md:h-20 lg:h-[100px] w-auto object-contain hover:scale-105 transition-transform duration-300" />
+                                <img src={optimizeImg("https://i.ibb.co/cSdvg9qJ/LOGO-LETRA-BLANCA.png", 300)} alt="Logo" className="h-16 md:h-20 lg:h-[100px] w-auto object-contain hover:scale-105 transition-transform duration-300" />
                             </a>
                             <nav className="hidden lg:flex items-center gap-4 xl:gap-6">
                                 {navItems.map((item) => (
                                     <a key={item.label} href={item.href} onClick={(e) => handleNavClick(e, item.href)} className="text-[11px] xl:text-xs font-bold text-slate-300 hover:text-brand-accent transition-colors tracking-widest uppercase cursor-pointer">{item.label}</a>
                                 ))}
+                                <div className="relative" ref={institutionalRef}>
+                                    <button onClick={() => setInstitutionalOpen(!institutionalOpen)} className="flex items-center gap-1 text-[11px] xl:text-xs font-bold text-slate-300 hover:text-brand-accent transition-colors tracking-widest uppercase cursor-pointer">
+                                        INSTITUCIONAL
+                                        <ChevronDown size={14} className={`transition-transform ${institutionalOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    {institutionalOpen && (
+                                        <div className="absolute top-full right-0 mt-3 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden min-w-[160px] animate-fade-in-up">
+                                            {institutionalItems.map((item) => (
+                                                <a key={item.label} href={item.href} onClick={(e) => handleNavClick(e, item.href)} className="block px-5 py-3 text-[11px] font-bold text-slate-300 hover:text-brand-accent hover:bg-slate-800 transition-colors tracking-widest uppercase cursor-pointer">{item.label}</a>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </nav>
                             <button className="lg:hidden text-white z-50" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>{mobileMenuOpen ? <X size={28}/> : <Menu size={28}/>}</button>
                         </div>
@@ -273,6 +337,19 @@
                                 {navItems.map((item) => (
                                     <a key={item.label} href={item.href} onClick={(e) => handleNavClick(e, item.href)} className="font-medium text-slate-300 hover:text-brand-accent uppercase tracking-wider">{item.label}</a>
                                 ))}
+                                <div className="border-t border-white/5 pt-4">
+                                    <button onClick={() => setMobileInstitutionalOpen(!mobileInstitutionalOpen)} className="flex items-center justify-between w-full font-medium text-slate-300 hover:text-brand-accent uppercase tracking-wider">
+                                        Institucional
+                                        <ChevronDown size={18} className={`transition-transform ${mobileInstitutionalOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    {mobileInstitutionalOpen && (
+                                        <div className="flex flex-col gap-4 pl-4 mt-4">
+                                            {institutionalItems.map((item) => (
+                                                <a key={item.label} href={item.href} onClick={(e) => handleNavClick(e, item.href)} className="font-medium text-slate-400 hover:text-brand-accent uppercase tracking-wider text-sm">{item.label}</a>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -306,7 +383,7 @@
             return (
                 <section id="hero" className="relative min-h-screen flex items-center justify-center pt-28 md:pt-20 overflow-hidden">
                     <div className="absolute inset-0 z-0 pointer-events-none">
-                        <div className="absolute inset-0 bg-[url('https://i.ibb.co/3y1BYXy3/190130171455g.jpg')] bg-cover bg-center opacity-90 animate-bg-zoom"></div>
+                        <div className={`absolute inset-0 bg-[url('${optimizeImg("https://i.ibb.co/3y1BYXy3/190130171455g.jpg", 1600)}')] bg-cover bg-center opacity-90 animate-bg-zoom`}></div>
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-brand-dark/60 to-brand-dark"></div>
                     </div>
 
@@ -338,17 +415,17 @@
 
                             <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 animate-fade-in-up delay-300">
                                 <a 
-                                    href="https://olimpicosipv.wnpower.host/Inscripciones/panel" 
+                                    href="https://olimpicosipv.wnpower.host/Inscripciones/formulario_inscripcion" 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="w-full sm:w-auto px-8 py-4 bg-brand-accent hover:bg-brand-accentHover text-brand-dark font-sans font-black rounded-xl transition-all transform hover:-translate-y-1 shadow-[0_0_30px_rgba(132,204,22,0.5)] flex items-center justify-center gap-2 uppercase tracking-wide text-center"
                                 >
-                                    Relevamiento Deportivo Preliminar
+                                    Inscripción a Evento
                                 </a>
                             </div>
                         </div>
                         <div className="flex-1 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xl relative flex justify-center md:justify-end animate-fade-in-up delay-200 mt-8 md:mt-0">
-                            <img src="https://i.ibb.co/0pCNLJp8/PAMPITO-FINAL-SIN-FONDO-2.png" alt="Mascota Oficial Pampito" className="relative w-full h-auto object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:scale-105 transition-transform duration-500 z-10" />
+                            <img src={optimizeImg("https://i.ibb.co/0pCNLJp8/PAMPITO-FINAL-SIN-FONDO-2.png", 700)} alt="Mascota Oficial Pampito" className="relative w-full h-auto object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:scale-105 transition-transform duration-500 z-10" />
                         </div>
                     </div>
                 </section>
@@ -378,7 +455,7 @@
                         <div className="grid lg:grid-cols-2 gap-12 items-center">
                             <div className="relative h-[400px] rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
                                 {images.map((img, i) => (
-                                    <img key={i} src={img} alt="Historia Olimpiadas" className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 transform group-hover:scale-105 ${i === curr ? 'opacity-100' : 'opacity-0'}`} />
+                                    <img key={i} src={optimizeImg(img, 800)} alt="Historia Olimpiadas" className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 transform group-hover:scale-105 ${i === curr ? 'opacity-100' : 'opacity-0'}`} />
                                 ))}
                                 <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-2">
                                     {images.map((_, idx) => (
@@ -429,17 +506,17 @@
 
         const disciplinesData = [
             { name: 'Carrera de Obstáculos', icon: <Activity size={32} />, categories: ['Libres', 'Por Equipos'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.ibb.co/355Jkbzj/OBSTACULOS.png' },
-            { name: 'Fútbol (5 y 8)', icon: <Goal size={32} />, categories: ['Libres', 'Veteranos (+40)', 'Senior (+50)'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.imgur.com/UjsD6Yd.jpg' },
-            { name: 'Voley', icon: <Trophy size={32} />, categories: ['Femenino', 'Masculino', 'Mixto'], venues: ['Club Guardia del Monte (Bv Brown 1188, Toay)'], image: 'https://i.imgur.com/BDgf7sM.jpg' },
-            { name: 'Beach Voley', icon: <Waves size={32} />, categories: ['Femenino', 'Masculino', 'Mixto'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.ibb.co/VY1HJtym/BEACH-VOLLEY.png' },
-            { name: 'Básquet (3x3 y 5x5)', icon: <Dribbble size={32} />, categories: ['Libres', 'Veteranos'], venues: ['Polideportivo Butaló'], image: 'https://i.imgur.com/ePNN4Mv.jpg' },
-            { name: 'Natación', icon: <Waves size={32} />, categories: ['Libres', 'Postas 4x50'], venues: ['A Confirmar'], image: 'https://i.imgur.com/QRjl0VY.jpg' },
-            { name: 'MTB', icon: <Bike size={32} />, categories: ['Cross Country', 'Rally'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.imgur.com/cMHIZtw.jpg' },
-            { name: 'Running', icon: <Activity size={32} />, categories: ['5K Participativo', '10K Competitivo'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.imgur.com/4ObhQ5b.jpg' },
+            { name: 'Fútbol (5 y 8)', icon: <Goal size={32} />, categories: ['Libres', 'Veteranos (+40)', 'Senior (+50)'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.ibb.co/HTh1hQ4h/FUTBOL.png' },
+            { name: 'Voley', icon: <Trophy size={32} />, categories: ['Femenino', 'Masculino', 'Mixto'], venues: ['Club Guardia del Monte (Bv Brown 1188, Toay)'], image: 'https://i.ibb.co/fdPSjr9J/VOLEY.png' },
+            { name: 'Beach Voley', icon: <Waves size={32} />, categories: ['Femenino', 'Masculino', 'Mixto'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.ibb.co/mV66vGf3/BEACH-VOLLEY.png' },
+            { name: 'Básquet (3x3 y 5x5)', icon: <Dribbble size={32} />, categories: ['Libres', 'Veteranos'], venues: ['Polideportivo Butaló'], image: 'https://i.ibb.co/gbktBGLs/BASQUET.png' },
+            { name: 'Natación', icon: <Waves size={32} />, categories: ['Libres', 'Postas 4x50'], venues: ['A Confirmar'], image: 'https://i.ibb.co/s9153vp1/NATACION-02.png' },
+            { name: 'MTB', icon: <Bike size={32} />, categories: ['Cross Country', 'Rally'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.ibb.co/Wvb2p7RW/MOUNTAIN-02.png' },
+            { name: 'Running', icon: <Activity size={32} />, categories: ['5K Participativo', '10K Competitivo'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.ibb.co/yBRFCZhz/RUNNING.png' },
             { name: 'Truco', icon: <Users size={32} />, categories: ['Parejas'], venues: ['Círculo de Sub Oficiales y Agentes (Martín Luther King 2245, Santa Rosa)'], image: 'https://i.ibb.co/qYpXnfLL/TRUCO02.png' },
-            { name: 'Tenis de Mesa', icon: <CircleDot size={32} />, categories: ['Individuales', 'Dobles'], venues: ['Joaquín Ferro 730, Santa Rosa'], image: 'https://i.imgur.com/9E7e5Fa.jpg' },
-            { name: 'Padel', icon: <Target size={32} />, categories: ['Caballeros', 'Damas'], venues: ['Cristal Padel (M. Varela 1671, Santa Rosa)'], image: 'https://i.imgur.com/iGZHUnE.jpg' },
-            { name: 'Pesca', icon: <Fish size={32} />, categories: ['Libres', 'Por equipos'], venues: ['Club Náutico, Laguna Don Tomás, Santa Rosa'], image: 'https://i.imgur.com/sZzALZa.jpg' },
+            { name: 'Tenis de Mesa', icon: <CircleDot size={32} />, categories: ['Individuales', 'Dobles'], venues: ['Joaquín Ferro 730, Santa Rosa'], image: 'https://i.ibb.co/5XS4MB5r/PING-PONG.png' },
+            { name: 'Padel', icon: <Target size={32} />, categories: ['Caballeros', 'Damas'], venues: ['Cristal Padel (M. Varela 1671, Santa Rosa)'], image: 'https://i.ibb.co/7xHTQLk2/PADEL.png' },
+            { name: 'Pesca', icon: <Fish size={32} />, categories: ['Libres', 'Por equipos'], venues: ['Club Náutico, Laguna Don Tomás, Santa Rosa'], image: 'https://i.ibb.co/HJDYBN6/PESCA.png' },
             { name: 'Newcom', icon: <Users size={32} />, categories: ['+60 Mixto'], venues: ['Club Sportivo'], image: 'https://i.ibb.co/8D9Rh48C/NEWCOM.png' },
             { name: 'Ciclismo Calle', icon: <Bike size={32} />, categories: ['Pelotón', 'Contrarreloj'], venues: ['Complejo Recreativo Municipal Horacio del Campo'], image: 'https://i.ibb.co/V0xCZST2/CICLISMO-RUTA.png' },
             { name: 'Tenis', icon: <Activity size={32} />, categories: ['Individuales', 'Dobles'], venues: ['Centro Empleado de Comercio (México 1810, Santa Rosa)'], image: 'https://i.ibb.co/21XR5SfG/TENIS.png' },
@@ -449,25 +526,44 @@
 
         const Disciplines = () => {
             const [selectedDiscipline, setSelectedDiscipline] = useState(null);
+            const [searchQuery, setSearchQuery] = useState("");
+
+            const filteredDisciplines = disciplinesData.filter(item =>
+                item.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
 
             return (
                 <section id="disciplinas" className="relative z-10">
                     <SectionHeader title="Disciplinas Deportivas" />
                     <div className="container mx-auto px-4 mb-24">
+                        <div className="max-w-md mx-auto mb-10 relative">
+                            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Buscar disciplina..."
+                                className="w-full bg-slate-800/50 border border-white/10 rounded-full py-3 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-accent transition-colors font-sans text-sm"
+                            />
+                        </div>
+                        {filteredDisciplines.length === 0 ? (
+                            <p className="text-center text-slate-500 font-sans">No encontramos ninguna disciplina con ese nombre.</p>
+                        ) : (
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                            {disciplinesData.map((item) => (
+                            {filteredDisciplines.map((item) => (
                                 <div key={item.name} onClick={() => setSelectedDiscipline(item)} className="group bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col items-center justify-center gap-5 hover:border-brand-accent hover:bg-slate-800 transition-all duration-500 cursor-pointer relative overflow-hidden shadow-lg transform hover:-translate-y-2 hover:scale-105">
-                                    <div className="absolute inset-0 z-0 opacity-10 pointer-events-none bg-[url('https://i.ibb.co/s9Qn6ddM/rectangular-seamless-blended.jpg')] bg-cover bg-center group-hover:opacity-20 transition-opacity duration-500"></div>
+                                    <div className={`absolute inset-0 z-0 opacity-10 pointer-events-none bg-[url('${optimizeImg("https://i.ibb.co/s9Qn6ddM/rectangular-seamless-blended.jpg", 400)}')] bg-cover bg-center group-hover:opacity-20 transition-opacity duration-500`}></div>
                                     <div className="absolute inset-0 z-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent pointer-events-none"></div>
 
                                     <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-accent bg-brand-accent/10 p-1 rounded-full relative z-10"><Info size={16} /></div>
                                     <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-2 border-slate-700 group-hover:border-brand-accent transition-all duration-500 shadow-xl bg-slate-800 relative z-10">
-                                        <img src={item.image} alt={item.name} loading="lazy" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out" />
+                                        <img src={optimizeImg(item.image, 250)} alt={item.name} loading="lazy" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out" />
                                     </div>
                                     <h3 className="font-bebas text-2xl text-slate-300 group-hover:text-white text-center tracking-wide relative z-10">{item.name}</h3>
                                 </div>
                             ))}
                         </div>
+                        )}
                     </div>
                     
                     {/* Modal para Disciplina */}
@@ -477,7 +573,7 @@
                             <div className="relative bg-slate-900 w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl animate-fade-in-up border border-white/10">
                                 <button onClick={() => setSelectedDiscipline(null)} className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-white hover:text-black transition-colors"><X size={20} /></button>
                                 <div className="h-64 md:h-96 relative bg-slate-950 flex items-center justify-center">
-                                    <img src={selectedDiscipline.image} alt={selectedDiscipline.name} loading="lazy" className="w-full h-full object-contain" />
+                                    <img src={optimizeImg(selectedDiscipline.image, 900)} alt={selectedDiscipline.name} loading="lazy" className="w-full h-full object-contain" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent pointer-events-none"></div>
                                     <div className="absolute bottom-6 left-6 md:left-8">
                                         <div className="inline-block p-3 rounded-xl bg-brand-accent text-brand-dark mb-3 shadow-lg">{selectedDiscipline.icon}</div>
@@ -567,6 +663,388 @@
             );
         };
 
+        // --- MÓDULO DE RESULTADOS ---
+        const RESULTADOS_API = '/.netlify/functions/resultados';
+        const slugify = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const eventDays = [
+            { label: 'Domingo 1 Nov', value: '2026-11-01' },
+            { label: 'Lunes 2 Nov', value: '2026-11-02' },
+            { label: 'Martes 3 Nov', value: '2026-11-03' },
+            { label: 'Miércoles 4 Nov', value: '2026-11-04' },
+            { label: 'Jueves 5 Nov', value: '2026-11-05' },
+            { label: 'Viernes 6 Nov', value: '2026-11-06' },
+        ];
+        const dayLabel = (value) => eventDays.find(d => d.value === value)?.label || value;
+        const medalStyles = {
+            1: { label: '1°', color: 'text-yellow-400', border: 'border-yellow-400/40' },
+            2: { label: '2°', color: 'text-slate-300', border: 'border-slate-300/40' },
+            3: { label: '3°', color: 'text-amber-600', border: 'border-amber-600/40' },
+        };
+
+        // Disciplinas con carga de partidos (marcador equipo A vs equipo B)
+        const DISCIPLINAS_PARTIDOS = ['Fútbol (5 y 8)', 'Básquet (3x3 y 5x5)', 'Voley', 'Tenis'];
+        // Disciplinas con carga de tiempo + provincia por competidor
+        const DISCIPLINAS_TIEMPO = ['Running', 'MTB', 'Ciclismo Calle', 'Natación', 'Carrera de Obstáculos'];
+
+        const getResultType = (disciplineName) => {
+            if (DISCIPLINAS_PARTIDOS.includes(disciplineName)) return 'partidos';
+            if (DISCIPLINAS_TIEMPO.includes(disciplineName)) return 'tiempo';
+            return 'podio';
+        };
+
+        const emptyMatch = () => ({ id: crypto.randomUUID ? crypto.randomUUID() : String(Math.random()), stage: '', teamA: '', scoreA: '', teamB: '', scoreB: '' });
+
+        const Resultados = () => {
+            const [resultados, setResultados] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [dayFilter, setDayFilter] = useState('todos');
+
+            const cargarResultados = async () => {
+                setLoading(true);
+                setError(null);
+                try {
+                    const res = await fetch(RESULTADOS_API);
+                    if (!res.ok) throw new Error('No se pudieron cargar los resultados');
+                    const data = await res.json();
+                    data.sort((a, b) => (a.day + a.discipline + a.category).localeCompare(b.day + b.discipline + b.category));
+                    setResultados(data);
+                } catch (e) {
+                    setError(e.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            useEffect(() => { cargarResultados(); }, []);
+
+            const filtrados = dayFilter === 'todos' ? resultados : resultados.filter(r => r.day === dayFilter);
+
+            return (
+                <section id="resultados" className="relative z-10">
+                    <SectionHeader title="Resultados">
+                        <p className="font-sans text-slate-400 max-w-2xl mx-auto">Ganadores y marcadores de cada disciplina, día por día</p>
+                    </SectionHeader>
+                    <div className="container mx-auto px-4 mb-24">
+                        <div className="flex flex-wrap justify-center gap-2 mb-10">
+                            <button onClick={() => setDayFilter('todos')} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border transition-colors ${dayFilter === 'todos' ? 'bg-brand-accent text-brand-dark border-brand-accent' : 'border-white/10 text-slate-400 hover:border-brand-accent/50'}`}>Todos</button>
+                            {eventDays.map(d => (
+                                <button key={d.value} onClick={() => setDayFilter(d.value)} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border transition-colors ${dayFilter === d.value ? 'bg-brand-accent text-brand-dark border-brand-accent' : 'border-white/10 text-slate-400 hover:border-brand-accent/50'}`}>{d.label}</button>
+                            ))}
+                        </div>
+
+                        {loading && <p className="text-center text-slate-500 font-sans">Cargando resultados...</p>}
+                        {error && <p className="text-center text-red-400 font-sans">{error}</p>}
+                        {!loading && !error && filtrados.length === 0 && (
+                            <p className="text-center text-slate-500 font-sans">Todavía no hay resultados cargados{dayFilter !== 'todos' ? ' para este día' : ''}.</p>
+                        )}
+
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto items-start">
+                            {filtrados.map((r) => (
+                                <div key={r.key} className="bg-slate-800/50 border border-white/5 rounded-2xl p-6 hover:border-brand-accent/30 transition-colors shadow-lg">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <h3 className="font-bebas text-2xl text-white tracking-wide">{r.discipline}</h3>
+                                        <Trophy className="text-brand-accent/60 w-5 h-5 flex-shrink-0" />
+                                    </div>
+                                    <p className="font-sans text-xs text-slate-500 uppercase tracking-widest mb-4">{r.category} · {dayLabel(r.day)}</p>
+
+                                    {/* Tipo: partidos */}
+                                    {r.type === 'partidos' && (
+                                        <div className="space-y-2">
+                                            {(r.matches || []).map((m) => (
+                                                <div key={m.id} className="border border-white/5 rounded-lg px-3 py-2 bg-slate-900/40">
+                                                    {m.stage && <p className="text-[10px] text-brand-accent uppercase tracking-widest mb-1 font-bold">{m.stage}</p>}
+                                                    <div className="flex items-center justify-between font-sans text-sm text-slate-200">
+                                                        <span className="truncate">{m.teamA}</span>
+                                                        <span className="font-bebas text-lg text-white px-2 whitespace-nowrap">{m.scoreA} - {m.scoreB}</span>
+                                                        <span className="truncate text-right">{m.teamB}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Tipo: tiempo */}
+                                    {r.type === 'tiempo' && (
+                                        <div className="space-y-2">
+                                            {(r.winners || []).filter(w => w.name).map((w) => (
+                                                <div key={w.position} className={`flex items-center gap-3 border rounded-lg px-3 py-2 ${medalStyles[w.position]?.border || 'border-white/5'}`}>
+                                                    <span className={`font-bebas text-lg w-8 flex-shrink-0 ${medalStyles[w.position]?.color || 'text-slate-400'}`}>{medalStyles[w.position]?.label || w.position}</span>
+                                                    <div className="flex-grow min-w-0">
+                                                        <p className="font-sans text-sm text-slate-200 truncate">{w.name} <span className="text-slate-500">· {w.provincia}</span></p>
+                                                    </div>
+                                                    <span className="font-mono text-sm text-brand-accent whitespace-nowrap">{w.time}</span>
+                                                </div>
+                                            ))}
+                                            {r.linkCompleto && (
+                                                <a href={r.linkCompleto} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs text-slate-400 hover:text-brand-accent transition-colors mt-2 font-sans">
+                                                    <ExternalLink size={14} /> Ver todos los tiempos
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Tipo: podio simple */}
+                                    {r.type !== 'partidos' && r.type !== 'tiempo' && (
+                                        <div className="space-y-2">
+                                            {(r.winners || []).filter(w => w.institute).map((w) => (
+                                                <div key={w.position} className={`flex items-center gap-3 border rounded-lg px-3 py-2 ${medalStyles[w.position]?.border || 'border-white/5'}`}>
+                                                    <span className={`font-bebas text-lg w-8 flex-shrink-0 ${medalStyles[w.position]?.color || 'text-slate-400'}`}>{medalStyles[w.position]?.label || w.position}</span>
+                                                    <span className="font-sans text-sm text-slate-200 truncate">{w.institute}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const AdminResultados = () => {
+            const [token, setToken] = useState(() => sessionStorage.getItem('olimpiadas_admin_token') || '');
+            const [passwordInput, setPasswordInput] = useState('');
+            const [authError, setAuthError] = useState('');
+            const [resultados, setResultados] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [saving, setSaving] = useState(false);
+            const [formError, setFormError] = useState('');
+
+            const [form, setForm] = useState({
+                day: eventDays[0].value,
+                discipline: disciplinesData[0].name,
+                category: disciplinesData[0].categories[0],
+                // podio simple
+                first: '', second: '', third: '',
+                // tiempo
+                t1: { name: '', provincia: '', time: '' },
+                t2: { name: '', provincia: '', time: '' },
+                t3: { name: '', provincia: '', time: '' },
+                linkCompleto: '',
+                // partidos
+                matches: [emptyMatch()],
+            });
+
+            const discipline = disciplinesData.find(d => d.name === form.discipline) || disciplinesData[0];
+            const resultType = getResultType(form.discipline);
+
+            const cargarResultados = async () => {
+                setLoading(true);
+                try {
+                    const res = await fetch(RESULTADOS_API);
+                    const data = await res.json();
+                    setResultados(data);
+                } catch (e) {
+                    setFormError('No se pudieron cargar los resultados existentes.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            useEffect(() => { if (token) cargarResultados(); }, [token]);
+
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                setAuthError('');
+                try {
+                    const res = await fetch(RESULTADOS_API, { headers: { 'X-Admin-Token': passwordInput } });
+                    if (res.status === 401) { setAuthError('Contraseña incorrecta.'); return; }
+                    sessionStorage.setItem('olimpiadas_admin_token', passwordInput);
+                    setToken(passwordInput);
+                } catch (e) {
+                    setAuthError('Error de conexión.');
+                }
+            };
+
+            const handleLogout = () => {
+                sessionStorage.removeItem('olimpiadas_admin_token');
+                setToken('');
+            };
+
+            const updateMatch = (id, field, value) => {
+                setForm(f => ({ ...f, matches: f.matches.map(m => m.id === id ? { ...m, [field]: value } : m) }));
+            };
+            const addMatch = () => setForm(f => ({ ...f, matches: [...f.matches, emptyMatch()] }));
+            const removeMatch = (id) => setForm(f => ({ ...f, matches: f.matches.filter(m => m.id !== id) }));
+
+            const resetResultFields = () => setForm(f => ({
+                ...f, first: '', second: '', third: '',
+                t1: { name: '', provincia: '', time: '' }, t2: { name: '', provincia: '', time: '' }, t3: { name: '', provincia: '', time: '' },
+                linkCompleto: '', matches: [emptyMatch()]
+            }));
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setFormError('');
+
+                const key = `${form.day}_${slugify(form.discipline)}_${slugify(form.category)}`;
+                let payload = { key, day: form.day, discipline: form.discipline, category: form.category, type: resultType };
+
+                if (resultType === 'partidos') {
+                    const validMatches = form.matches.filter(m => m.teamA.trim() && m.teamB.trim() && m.scoreA !== '' && m.scoreB !== '');
+                    if (validMatches.length === 0) { setFormError('Cargá al menos un partido completo.'); return; }
+                    payload.matches = validMatches.map(({ id, ...rest }) => rest).map((m, i) => ({ ...m, id: i }));
+                } else if (resultType === 'tiempo') {
+                    if (!form.t1.name.trim() || !form.t1.time.trim()) { setFormError('El 1° puesto necesita al menos nombre y tiempo.'); return; }
+                    payload.winners = [
+                        { position: 1, name: form.t1.name.trim(), provincia: form.t1.provincia.trim(), time: form.t1.time.trim() },
+                        { position: 2, name: form.t2.name.trim(), provincia: form.t2.provincia.trim(), time: form.t2.time.trim() },
+                        { position: 3, name: form.t3.name.trim(), provincia: form.t3.provincia.trim(), time: form.t3.time.trim() },
+                    ];
+                    payload.linkCompleto = form.linkCompleto.trim();
+                } else {
+                    if (!form.first.trim()) { setFormError('El 1° puesto es obligatorio.'); return; }
+                    payload.winners = [
+                        { position: 1, institute: form.first.trim() },
+                        { position: 2, institute: form.second.trim() },
+                        { position: 3, institute: form.third.trim() },
+                    ];
+                }
+
+                setSaving(true);
+                try {
+                    const res = await fetch(RESULTADOS_API, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+                        body: JSON.stringify(payload)
+                    });
+                    if (res.status === 401) { setFormError('Sesión vencida, volvé a iniciar sesión.'); handleLogout(); return; }
+                    if (!res.ok) throw new Error('Error al guardar');
+                    resetResultFields();
+                    cargarResultados();
+                } catch (e) {
+                    setFormError(e.message);
+                } finally {
+                    setSaving(false);
+                }
+            };
+
+            const handleDelete = async (key) => {
+                if (!confirm('¿Eliminar este resultado?')) return;
+                try {
+                    await fetch(RESULTADOS_API, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+                        body: JSON.stringify({ key })
+                    });
+                    cargarResultados();
+                } catch (e) {
+                    setFormError('No se pudo eliminar.');
+                }
+            };
+
+            if (!token) {
+                return (
+                    <section id="admin" className="relative z-10 py-24">
+                        <div className="container mx-auto px-4 max-w-sm">
+                            <form onSubmit={handleLogin} className="bg-slate-800/50 border border-white/10 rounded-2xl p-8 flex flex-col items-center gap-4 shadow-lg">
+                                <Lock className="text-brand-accent w-8 h-8" />
+                                <h3 className="font-bebas text-2xl text-white tracking-wide">Panel de Administración</h3>
+                                <input type="password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} placeholder="Contraseña" className="w-full bg-slate-900 border border-white/10 rounded-full py-3 px-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-accent font-sans text-sm text-center" />
+                                {authError && <p className="text-red-400 text-xs font-sans">{authError}</p>}
+                                <button type="submit" className="w-full py-3 bg-brand-accent hover:bg-brand-accentHover text-brand-dark font-sans font-black rounded-full uppercase tracking-wide text-sm">Ingresar</button>
+                            </form>
+                        </div>
+                    </section>
+                );
+            }
+
+            return (
+                <section id="admin" className="relative z-10 py-24">
+                    <div className="container mx-auto px-4 max-w-3xl">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="font-bebas text-3xl text-white tracking-wide">Cargar Resultado</h3>
+                            <button onClick={handleLogout} className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-brand-accent uppercase tracking-wide"><LogOut size={16} /> Salir</button>
+                        </div>
+                        <form onSubmit={handleSubmit} className="bg-slate-800/50 border border-white/10 rounded-2xl p-8 flex flex-col gap-4 mb-6 shadow-lg">
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <select value={form.day} onChange={(e) => setForm(f => ({ ...f, day: e.target.value }))} className="bg-slate-900 border border-white/10 rounded-lg py-3 px-4 text-slate-200 font-sans text-sm">
+                                    {eventDays.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                                </select>
+                                <select value={form.discipline} onChange={(e) => { const disc = disciplinesData.find(d => d.name === e.target.value); setForm(f => ({ ...f, discipline: e.target.value, category: disc.categories[0] })); }} className="bg-slate-900 border border-white/10 rounded-lg py-3 px-4 text-slate-200 font-sans text-sm">
+                                    {disciplinesData.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}
+                                </select>
+                                <select value={form.category} onChange={(e) => setForm(f => ({ ...f, category: e.target.value }))} className="bg-slate-900 border border-white/10 rounded-lg py-3 px-4 text-slate-200 font-sans text-sm md:col-span-2">
+                                    {discipline.categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+
+                            {/* FORM: Partidos (fútbol, básquet, voley, tenis) */}
+                            {resultType === 'partidos' && (
+                                <div className="flex flex-col gap-3">
+                                    <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Partidos del día</p>
+                                    {form.matches.map((m, idx) => (
+                                        <div key={m.id} className="bg-slate-900/50 border border-white/5 rounded-lg p-4 flex flex-col gap-2">
+                                            <div className="flex items-center justify-between">
+                                                <input value={m.stage} onChange={(e) => updateMatch(m.id, 'stage', e.target.value)} placeholder="Etapa (ej. Final, Fase de grupos)" className="bg-slate-900 border border-white/10 rounded-lg py-2 px-3 text-slate-200 placeholder-slate-500 font-sans text-xs flex-grow" />
+                                                {form.matches.length > 1 && (
+                                                    <button type="button" onClick={() => removeMatch(m.id)} className="text-slate-500 hover:text-red-400 p-2 ml-2"><Trash2 size={16} /></button>
+                                                )}
+                                            </div>
+                                            <div className="grid grid-cols-5 gap-2 items-center">
+                                                <input value={m.teamA} onChange={(e) => updateMatch(m.id, 'teamA', e.target.value)} placeholder="Instituto A" className="col-span-2 bg-slate-900 border border-white/10 rounded-lg py-2 px-3 text-slate-200 placeholder-slate-500 font-sans text-sm" />
+                                                <input type="number" value={m.scoreA} onChange={(e) => updateMatch(m.id, 'scoreA', e.target.value)} placeholder="0" className="bg-slate-900 border border-white/10 rounded-lg py-2 px-2 text-slate-200 placeholder-slate-500 font-sans text-sm text-center" />
+                                                <input type="number" value={m.scoreB} onChange={(e) => updateMatch(m.id, 'scoreB', e.target.value)} placeholder="0" className="bg-slate-900 border border-white/10 rounded-lg py-2 px-2 text-slate-200 placeholder-slate-500 font-sans text-sm text-center" />
+                                                <input value={m.teamB} onChange={(e) => updateMatch(m.id, 'teamB', e.target.value)} placeholder="Instituto B" className="col-span-2 bg-slate-900 border border-white/10 rounded-lg py-2 px-3 text-slate-200 placeholder-slate-500 font-sans text-sm md:col-span-1" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button type="button" onClick={addMatch} className="self-start flex items-center gap-2 text-xs font-bold text-brand-accent hover:text-brand-accentHover uppercase tracking-wide"><Plus size={14} /> Agregar otro partido</button>
+                                </div>
+                            )}
+
+                            {/* FORM: Tiempo (running, mtb, ciclismo, natación, obstáculos) */}
+                            {resultType === 'tiempo' && (
+                                <div className="flex flex-col gap-3">
+                                    <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Podio (1°, 2° y 3°)</p>
+                                    {[1, 2, 3].map(pos => (
+                                        <div key={pos} className="grid grid-cols-4 gap-2 items-center">
+                                            <span className="font-bebas text-lg text-brand-accent">{pos}°</span>
+                                            <input value={form[`t${pos}`].name} onChange={(e) => setForm(f => ({ ...f, [`t${pos}`]: { ...f[`t${pos}`], name: e.target.value } }))} placeholder="Nombre y apellido" className="bg-slate-900 border border-white/10 rounded-lg py-2 px-3 text-slate-200 placeholder-slate-500 font-sans text-sm" />
+                                            <input value={form[`t${pos}`].provincia} onChange={(e) => setForm(f => ({ ...f, [`t${pos}`]: { ...f[`t${pos}`], provincia: e.target.value } }))} placeholder="Provincia" className="bg-slate-900 border border-white/10 rounded-lg py-2 px-3 text-slate-200 placeholder-slate-500 font-sans text-sm" />
+                                            <input value={form[`t${pos}`].time} onChange={(e) => setForm(f => ({ ...f, [`t${pos}`]: { ...f[`t${pos}`], time: e.target.value } }))} placeholder="Tiempo (ej. 00:24:31)" className="bg-slate-900 border border-white/10 rounded-lg py-2 px-3 text-slate-200 placeholder-slate-500 font-sans text-sm" />
+                                        </div>
+                                    ))}
+                                    <input value={form.linkCompleto} onChange={(e) => setForm(f => ({ ...f, linkCompleto: e.target.value }))} placeholder="Link a tiempos completos (opcional)" className="bg-slate-900 border border-white/10 rounded-lg py-2 px-3 text-slate-200 placeholder-slate-500 font-sans text-sm" />
+                                </div>
+                            )}
+
+                            {/* FORM: Podio simple (resto de disciplinas) */}
+                            {resultType === 'podio' && (
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <input value={form.first} onChange={(e) => setForm(f => ({ ...f, first: e.target.value }))} placeholder="1° puesto — Instituto" className="bg-slate-900 border border-white/10 rounded-lg py-3 px-4 text-slate-200 placeholder-slate-500 font-sans text-sm md:col-span-2" />
+                                    <input value={form.second} onChange={(e) => setForm(f => ({ ...f, second: e.target.value }))} placeholder="2° puesto — Instituto (opcional)" className="bg-slate-900 border border-white/10 rounded-lg py-3 px-4 text-slate-200 placeholder-slate-500 font-sans text-sm" />
+                                    <input value={form.third} onChange={(e) => setForm(f => ({ ...f, third: e.target.value }))} placeholder="3° puesto — Instituto (opcional)" className="bg-slate-900 border border-white/10 rounded-lg py-3 px-4 text-slate-200 placeholder-slate-500 font-sans text-sm" />
+                                </div>
+                            )}
+
+                            {formError && <p className="text-red-400 text-xs font-sans">{formError}</p>}
+                            <button type="submit" disabled={saving} className="flex items-center justify-center gap-2 py-3 bg-brand-accent hover:bg-brand-accentHover disabled:opacity-50 text-brand-dark font-sans font-black rounded-full uppercase tracking-wide text-sm"><Plus size={18} /> {saving ? 'Guardando...' : 'Guardar Resultado'}</button>
+                        </form>
+
+                        <h4 className="font-bebas text-xl text-white tracking-wide mb-4">Resultados cargados ({resultados.length})</h4>
+                        {loading ? <p className="text-slate-500 font-sans text-sm">Cargando...</p> : (
+                            <div className="space-y-2">
+                                {resultados.map(r => (
+                                    <div key={r.key} className="flex items-center justify-between bg-slate-900/60 border border-white/5 rounded-lg px-4 py-3">
+                                        <div className="font-sans text-sm text-slate-300">
+                                            <span className="font-bold text-white">{r.discipline}</span> · {r.category} · {dayLabel(r.day)}
+                                            {r.type === 'partidos' && <span className="text-slate-500"> — {(r.matches || []).length} partido(s)</span>}
+                                            {r.type === 'tiempo' && <span className="text-slate-500"> — 1°: {r.winners?.find(w=>w.position===1)?.name || '-'}</span>}
+                                            {r.type !== 'partidos' && r.type !== 'tiempo' && <span className="text-slate-500"> — 1°: {r.winners?.find(w=>w.position===1)?.institute || '-'}</span>}
+                                        </div>
+                                        <button onClick={() => handleDelete(r.key)} className="text-slate-500 hover:text-red-400 p-2"><Trash2 size={16} /></button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </section>
+            );
+        };
+
         const Rules = () => {
             return (
                 <section id="reglamentos" className="relative z-10">
@@ -636,7 +1114,7 @@
                     <div className="h-56 overflow-hidden relative">
                         <div className="absolute inset-0 bg-slate-900/30 group-hover:bg-transparent transition-colors z-10 duration-500 pointer-events-none"></div>
                         {images.map((img, idx) => (
-                            <img key={idx} src={img} alt={`${item.name} - ${idx + 1}`} loading="lazy" className={`absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-all duration-1000 ease-in-out ${idx === currentImage ? 'opacity-100 z-0' : 'opacity-0 -z-10'}`} />
+                            <img key={idx} src={optimizeImg(img, 700)} alt={`${item.name} - ${idx + 1}`} loading="lazy" className={`absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-all duration-1000 ease-in-out ${idx === currentImage ? 'opacity-100 z-0' : 'opacity-0 -z-10'}`} />
                         ))}
                         {images.length > 1 && (
                             <div className="absolute bottom-3 left-0 right-0 z-20 flex justify-center gap-1.5">
@@ -786,7 +1264,7 @@
                                 <div key={index} onClick={() => setSelectedAuthority(auth)} className="bg-slate-800/80 backdrop-blur rounded-2xl p-8 flex flex-col items-center text-center border-2 border-brand-accent shadow-[0_0_30px_rgba(132,204,22,0.15)] transform hover:scale-105 transition-all duration-300 max-w-sm w-full cursor-pointer relative group">
                                     <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-accent bg-brand-accent/10 p-1.5 rounded-full"><Info size={18} /></div>
                                     <div className="w-32 h-32 mb-6 rounded-full overflow-hidden border-4 border-slate-700 p-1 group-hover:border-brand-accent transition-colors bg-slate-900">
-                                        <img src={auth.image} alt={auth.name} loading="lazy" className={`w-full h-full object-cover ${auth.position || 'object-center'} rounded-full`} />
+                                        <img src={optimizeImg(auth.image, 250)} alt={auth.name} loading="lazy" className={`w-full h-full object-cover ${auth.position || 'object-center'} rounded-full`} />
                                     </div>
                                     <h3 className="font-bebas text-3xl text-white mb-1 tracking-wide">{auth.name}</h3>
                                     <p className="font-sans text-brand-accent font-bold uppercase text-sm tracking-widest">{auth.role}</p>
@@ -797,7 +1275,7 @@
                             {authoritiesData.slice(1).map((auth, index) => (
                                 <div key={index} onClick={() => setSelectedAuthority(auth)} className="group bg-slate-800/50 rounded-xl p-6 flex items-center gap-4 border border-white/5 hover:border-brand-accent/50 hover:bg-slate-700/50 transition-all duration-300 cursor-pointer shadow-lg">
                                     <div className="w-16 h-16 flex-shrink-0 rounded-full overflow-hidden border border-slate-600 group-hover:border-brand-accent transition-colors bg-slate-900">
-                                        <img src={auth.image} alt={auth.name} loading="lazy" className={`w-full h-full object-cover ${auth.position || 'object-center'} grayscale group-hover:grayscale-0 transition-all duration-500`} />
+                                        <img src={optimizeImg(auth.image, 130)} alt={auth.name} loading="lazy" className={`w-full h-full object-cover ${auth.position || 'object-center'} grayscale group-hover:grayscale-0 transition-all duration-500`} />
                                     </div>
                                     <div className="text-left flex-grow">
                                         <h3 className="font-bebas text-2xl text-white leading-tight mb-1 group-hover:text-brand-accent transition-colors tracking-wide mt-1">{auth.name}</h3>
@@ -814,7 +1292,7 @@
                             <div className="relative bg-slate-900 w-full max-w-sm rounded-2xl p-8 shadow-2xl animate-fade-in-up border border-white/10 flex flex-col items-center text-center">
                                 <button onClick={() => setSelectedAuthority(null)} className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-white hover:text-black transition-colors"><X size={20} /></button>
                                 <div className="w-48 h-48 md:w-56 md:h-56 mb-6 rounded-full overflow-hidden border-4 border-brand-accent shadow-[0_0_30px_rgba(132,204,22,0.3)] bg-slate-800">
-                                    <img src={selectedAuthority.image} alt={selectedAuthority.name} className={`w-full h-full object-cover ${selectedAuthority.position || 'object-center'}`} />
+                                    <img src={optimizeImg(selectedAuthority.image, 450)} alt={selectedAuthority.name} className={`w-full h-full object-cover ${selectedAuthority.position || 'object-center'}`} />
                                 </div>
                                 <h3 className="font-bebas text-3xl text-white mb-2 tracking-wide">{selectedAuthority.name}</h3>
                                 <p className="font-sans text-brand-accent font-bold uppercase tracking-widest text-sm">{selectedAuthority.role}</p>
@@ -906,11 +1384,13 @@
                         <Venues />
                         <Disciplines />
                         <Schedule />
+                        <Resultados />
                         <Rules />
                         <Tourism />
                         <Authorities />
                         <Sponsors />
                     </main>
+                    <AdminResultados />
                     <Footer />
 
                     <button 
