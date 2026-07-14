@@ -376,7 +376,7 @@
                     return { días: 0, horas: 0, min: 0, seg: 0 };
                 };
                 setTimeLeft(calculateTimeLeft());
-                const timer = setInterval(calculateTimeLeft, 1000);
+                const timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
                 return () => clearInterval(timer);
             }, []);
 
@@ -1311,21 +1311,6 @@
                 </section>
             );
         };
-
-        const authoritiesData = [
-            { name: 'Ing. Walter Vargas', role: 'Presidente', image: 'https://i.ibb.co/Tx5RKX9B/Gemini-Generated-Image-bebzbxbebzbxbebz-1-1-1-1.png', position: 'object-[50%_20%]' },
-            { name: 'Claudio Erro', role: 'Vicepresidente', image: 'https://i.ibb.co/3yHz7Rf4/Gemini-Generated-Image-tkvzf1tkvzf1tkvz-1.png', position: 'object-[50%_30%]' },
-            { name: 'Graciela Ruiz', role: 'Secretaría General', image: 'https://i.ibb.co/B5CZ3Z8M/Gemini-Generated-Image-jlx7tijlx7tijlx7.png', position: 'object-top' },
-            { name: 'CPN Guadalupe Villagra / Ariel Zentner', role: 'Tesorería', image: 'https://i.ibb.co/NdLY92Hs/Gemini-Generated-Image-i82s5ii82s5ii82s.jpg', position: 'object-[50%_20%]' },
-            { name: 'Abog. Joan Moyano', role: 'Asesoría Legal', image: 'https://i.ibb.co/8n6tZTb1/Gemini-Generated-Image-7dg3b07dg3b07dg3-1-1.png', position: 'object-[50%_20%]' },
-            { name: 'A. Prog. Ana Oddone', role: 'Logística', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' },
-            { name: 'Arq. Lucas Roldan', role: 'Comunicación', image: 'https://i.ibb.co/fYsG8sTj/Gemini-Generated-Image-5yavnr5yavnr5yav.png', position: 'object-[50%_20%]' },
-            { name: 'Arq. Ezequiel Alcaraz', role: 'Imagen', image: 'https://i.ibb.co/qFrwxkcS/Gemini-Generated-Image-qp533bqp533bqp53-1.png', position: 'object-[50%_20%]' },
-            { name: 'Mariana Miranda', role: 'Ceremonial y Protocolo', image: 'https://i.ibb.co/hRQJqCWc/Chat-GPT-Image-29-jun-2026-12-13-25-p-m.png', position: 'object-center' },
-            { name: 'Prof. Emiliano Rodriguez', role: 'Deportes', image: 'https://i.ibb.co/NMrzJQv/Whats-App-Image-2026-02-25-at-09-35-37.jpg', position: 'object-[50%_20%]' },
-            { name: 'María Diez', role: 'Olimpiadas Solidarias', image: 'https://i.ibb.co/MDNwkxW1/Whats-App-Image-2026-03-02-at-10-42-20.jpg', position: 'object-[50%_20%]' },
-            { name: 'A. Prog. Francisco Piu', role: 'Catering y Eventos', image: 'https://i.ibb.co/fzGs4SyJ/Whats-App-Image-2026-02-25-at-09-32-39.jpg', position: 'object-[50%_20%]' },
-        ];
 
         const Authorities = () => {
             const authoritiesData = [

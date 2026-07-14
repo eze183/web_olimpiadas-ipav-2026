@@ -30,7 +30,12 @@ exports.handler = async (event) => {
       return { statusCode: 401, body: JSON.stringify({ error: "No autorizado" }) };
     }
 
-    const data = JSON.parse(event.body || "{}");
+    let data;
+    try {
+      data = JSON.parse(event.body || "{}");
+    } catch {
+      return { statusCode: 400, body: JSON.stringify({ error: "JSON inválido" }) };
+    }
     if (!data.key) {
       return { statusCode: 400, body: JSON.stringify({ error: "Falta la clave (key)" }) };
     }
