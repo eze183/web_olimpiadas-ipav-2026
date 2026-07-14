@@ -683,6 +683,13 @@
 
         // Disciplinas con carga de partidos (marcador equipo A vs equipo B)
         const DISCIPLINAS_PARTIDOS = ['Fútbol (5 y 8)', 'Básquet (3x3 y 5x5)', 'Voley', 'Tenis'];
+        const provinciasArgentinas = [
+            'Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes',
+            'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza', 'Misiones',
+            'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe',
+            'Santiago del Estero', 'Tierra del Fuego', 'Tucumán'
+        ];
+
         // Disciplinas con carga de tiempo + provincia por competidor
         const DISCIPLINAS_TIEMPO = ['Running', 'MTB', 'Ciclismo Calle', 'Natación', 'Carrera de Obstáculos'];
 
@@ -998,12 +1005,15 @@
                             {/* FORM: Tiempo (running, mtb, ciclismo, natación, obstáculos) */}
                             {resultType === 'tiempo' && (
                                 <div className="flex flex-col gap-3">
+                                    <datalist id="lista-provincias">
+                                        {provinciasArgentinas.map(p => <option key={p} value={p} />)}
+                                    </datalist>
                                     <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Podio (1°, 2° y 3°)</p>
                                     {[1, 2, 3].map(pos => (
                                         <div key={pos} className="grid grid-cols-4 gap-2 items-center">
                                             <span className="font-bebas text-lg text-brand-accent">{pos}°</span>
                                             <input value={form[`t${pos}`].name} onChange={(e) => setForm(f => ({ ...f, [`t${pos}`]: { ...f[`t${pos}`], name: e.target.value } }))} placeholder="Nombre y apellido" className="bg-slate-900 border border-white/10 rounded-lg py-2 px-3 text-slate-200 placeholder-slate-500 font-sans text-sm" />
-                                            <input value={form[`t${pos}`].provincia} onChange={(e) => setForm(f => ({ ...f, [`t${pos}`]: { ...f[`t${pos}`], provincia: e.target.value } }))} placeholder="Provincia" className="bg-slate-900 border border-white/10 rounded-lg py-2 px-3 text-slate-200 placeholder-slate-500 font-sans text-sm" />
+                                            <input value={form[`t${pos}`].provincia} onChange={(e) => setForm(f => ({ ...f, [`t${pos}`]: { ...f[`t${pos}`], provincia: e.target.value } }))} placeholder="Provincia" list="lista-provincias" className="bg-slate-900 border border-white/10 rounded-lg py-2 px-3 text-slate-200 placeholder-slate-500 font-sans text-sm" />
                                             <input value={form[`t${pos}`].time} onChange={(e) => setForm(f => ({ ...f, [`t${pos}`]: { ...f[`t${pos}`], time: e.target.value } }))} placeholder="Tiempo (ej. 00:24:31)" className="bg-slate-900 border border-white/10 rounded-lg py-2 px-3 text-slate-200 placeholder-slate-500 font-sans text-sm" />
                                         </div>
                                     ))}
