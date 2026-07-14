@@ -1434,8 +1434,11 @@
                                 <a href="https://wa.me/5492954516537" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:text-white hover:bg-brand-accent transition-all"><Phone size={20} /></a>
                             </div>
                         </div>
-                        <div className="mt-12 pt-8 border-t border-white/5 text-center font-sans text-slate-600 text-sm">
+                        <div className="mt-12 pt-8 border-t border-white/5 text-center font-sans text-slate-600 text-sm flex flex-col items-center gap-3">
                             <p>© 2026 Olimpiadas Nacionales de Empleados de Institutos de Vivienda. Todos los derechos reservados.</p>
+                            <a href="#admin" className="text-slate-800 hover:text-brand-accent transition-colors" title="Panel de administración">
+                                <Lock size={12} />
+                            </a>
                         </div>
                     </div>
                 </footer>
@@ -1444,11 +1447,18 @@
 
         const App = () => {
             const [showBackToTop, setShowBackToTop] = useState(false);
+            const [isAdminRoute, setIsAdminRoute] = useState(() => window.location.hash === '#admin');
             
             useEffect(() => {
                 const handleScroll = () => setShowBackToTop(window.scrollY > 400); 
                 window.addEventListener('scroll', handleScroll);
                 return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            useEffect(() => {
+                const handleHashChange = () => setIsAdminRoute(window.location.hash === '#admin');
+                window.addEventListener('hashchange', handleHashChange);
+                return () => window.removeEventListener('hashchange', handleHashChange);
             }, []);
 
             const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1458,18 +1468,23 @@
                     <AbstractBackground />
                     <Header />
                     <main className="flex-grow z-10 relative">
-                        <Hero />
-                        <Historia />
-                        <Venues />
-                        <Disciplines />
-                        <Schedule />
-                        <Resultados />
-                        <Rules />
-                        <Tourism />
-                        <Authorities />
-                        <Sponsors />
+                        {isAdminRoute ? (
+                            <AdminResultados />
+                        ) : (
+                            <>
+                                <Hero />
+                                <Historia />
+                                <Venues />
+                                <Disciplines />
+                                <Schedule />
+                                <Resultados />
+                                <Rules />
+                                <Tourism />
+                                <Authorities />
+                                <Sponsors />
+                            </>
+                        )}
                     </main>
-                    <AdminResultados />
                     <Footer />
 
                     <button 
