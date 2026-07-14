@@ -138,7 +138,7 @@
             CircleDot, Users, Activity, Dribbble, Goal, Info, ExternalLink,
             Instagram, Mail, Phone, Clock, Fish, FileText, ArrowUp, Compass,
             MessageCircle, Send, Sparkles, Bot, Loader2, ChevronDown, Search,
-            Trash2, Plus, Medal, LogOut
+            Trash2, Plus, Medal, LogOut, Edit3
         } from 'lucide-react';
 
         // Optimiza imágenes externas (ibb.co, imgur) redimensionando y convirtiendo a WebP
@@ -667,12 +667,10 @@
         const RESULTADOS_API = '/.netlify/functions/resultados';
         const slugify = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         const eventDays = [
-            { label: 'Domingo 1 Nov', value: '2026-11-01' },
             { label: 'Lunes 2 Nov', value: '2026-11-02' },
             { label: 'Martes 3 Nov', value: '2026-11-03' },
             { label: 'Miércoles 4 Nov', value: '2026-11-04' },
             { label: 'Jueves 5 Nov', value: '2026-11-05' },
-            { label: 'Viernes 6 Nov', value: '2026-11-06' },
         ];
         const dayLabel = (value) => eventDays.find(d => d.value === value)?.label || value;
         const medalStyles = {
@@ -705,7 +703,15 @@
             const [resultados, setResultados] = useState([]);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
-            const [dayFilter, setDayFilter] = useState('todos');
+            const [disciplineSearch, setDisciplineSearch] = useState('');
+
+            // Día activo: el más cercano al actual con resultados, o el primero de la lista
+            const getInitialDay = () => {
+                const today = new Date().toISOString().slice(0, 10);
+                const future = eventDays.filter(d => d.value >= today);
+                return future.length > 0 ? future[0].value : eventDays[eventDays.length - 1].value;
+            };
+            const [dayFilter, setDayFilter] = useState(getInitialDay);
 
             const cargarResultados = async () => {
                 setLoading(true);
@@ -716,6 +722,12 @@
                     const data = await res.json();
                     data.sort((a, b) => (a.day + a.discipline + a.category).localeCompare(b.day + b.discipline + b.category));
                     setResultados(data);
+                    // Si el día activo no tiene resultados pero otro sí, saltar al primero con datos
+                    const initial = getInitialDay();
+                    const hasInitial = data.some(r => r.day === initial);
+                    if (!hasInitial && data.length > 0) {
+                        setDayFilter(data[0].day);
+                    }
                 } catch (e) {
                     setError(e.message);
                 } finally {
@@ -725,7 +737,9 @@
 
             useEffect(() => { cargarResultados(); }, []);
 
-            const filtrados = dayFilter === 'todos' ? resultados : resultados.filter(r => r.day === dayFilter);
+            const filtrados = resultados
+                .filter(r => r.day === dayFilter)
+                .filter(r => disciplineSearch === '' || r.discipline.toLowerCase().includes(disciplineSearch.toLowerCase()));
 
             return (
                 <section id="resultados" className="relative z-10">
@@ -733,17 +747,29 @@
                         <p className="font-sans text-slate-400 max-w-2xl mx-auto">Ganadores y marcadores de cada disciplina, día por día</p>
                     </SectionHeader>
                     <div className="container mx-auto px-4 mb-24">
-                        <div className="flex flex-wrap justify-center gap-2 mb-10">
-                            <button onClick={() => setDayFilter('todos')} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border transition-colors ${dayFilter === 'todos' ? 'bg-brand-accent text-brand-dark border-brand-accent' : 'border-white/10 text-slate-400 hover:border-brand-accent/50'}`}>Todos</button>
+                        {/* Filtros de día + buscador en una sola fila */}
+                        <div className="flex flex-nowrap justify-center items-center gap-2 mb-10 overflow-x-auto pb-2 px-2 -mx-2">
                             {eventDays.map(d => (
-                                <button key={d.value} onClick={() => setDayFilter(d.value)} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border transition-colors ${dayFilter === d.value ? 'bg-brand-accent text-brand-dark border-brand-accent' : 'border-white/10 text-slate-400 hover:border-brand-accent/50'}`}>{d.label}</button>
+                                <button key={d.value} onClick={() => { setDayFilter(d.value); setDisciplineSearch(''); }} className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border transition-colors whitespace-nowrap ${dayFilter === d.value ? 'bg-brand-accent text-brand-dark border-brand-accent' : 'border-white/10 text-slate-400 hover:border-brand-accent/50'}`}>{d.label}</button>
                             ))}
+                            <div className="relative flex-shrink-0">
+                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                                <input
+                                    type="text"
+                                    value={disciplineSearch}
+                                    onChange={(e) => setDisciplineSearch(e.target.value)}
+                                    placeholder="Buscar disciplina..."
+                                    className="bg-slate-800/50 border border-white/10 rounded-full py-2 pl-8 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-accent transition-colors font-sans text-xs w-44"
+                                />
+                            </div>
                         </div>
 
                         {loading && <p className="text-center text-slate-500 font-sans">Cargando resultados...</p>}
                         {error && <p className="text-center text-red-400 font-sans">{error}</p>}
                         {!loading && !error && filtrados.length === 0 && (
-                            <p className="text-center text-slate-500 font-sans">Todavía no hay resultados cargados{dayFilter !== 'todos' ? ' para este día' : ''}.</p>
+                            <p className="text-center text-slate-500 font-sans">
+                                {disciplineSearch ? `No hay resultados para "${disciplineSearch}" en este día.` : 'Todavía no hay resultados cargados para este día.'}
+                            </p>
                         )}
 
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto items-start">
@@ -818,6 +844,7 @@
             const [loading, setLoading] = useState(false);
             const [saving, setSaving] = useState(false);
             const [formError, setFormError] = useState('');
+            const [editingKey, setEditingKey] = useState(null);
 
             const [form, setForm] = useState({
                 day: eventDays[0].value,
@@ -882,6 +909,48 @@
                 linkCompleto: '', matches: [emptyMatch()]
             }));
 
+            const handleEdit = (r) => {
+                setEditingKey(r.key);
+                setFormError('');
+                const base = {
+                    day: r.day,
+                    discipline: r.discipline,
+                    category: r.category,
+                    first: '', second: '', third: '',
+                    t1: { name: '', provincia: '', time: '' },
+                    t2: { name: '', provincia: '', time: '' },
+                    t3: { name: '', provincia: '', time: '' },
+                    linkCompleto: '',
+                    matches: [emptyMatch()],
+                };
+                if (r.type === 'partidos') {
+                    base.matches = (r.matches && r.matches.length > 0)
+                        ? r.matches.map(m => ({ ...m, id: crypto.randomUUID ? crypto.randomUUID() : String(Math.random()) }))
+                        : [emptyMatch()];
+                } else if (r.type === 'tiempo') {
+                    [1, 2, 3].forEach(pos => {
+                        const w = (r.winners || []).find(w => w.position === pos);
+                        if (w) base[`t${pos}`] = { name: w.name || '', provincia: w.provincia || '', time: w.time || '' };
+                    });
+                    base.linkCompleto = r.linkCompleto || '';
+                } else {
+                    const w1 = (r.winners || []).find(w => w.position === 1);
+                    const w2 = (r.winners || []).find(w => w.position === 2);
+                    const w3 = (r.winners || []).find(w => w.position === 3);
+                    base.first = w1?.provincia || '';
+                    base.second = w2?.provincia || '';
+                    base.third = w3?.provincia || '';
+                }
+                setForm(base);
+                window.scrollTo({ top: document.getElementById('admin')?.offsetTop - 100 || 0, behavior: 'smooth' });
+            };
+
+            const handleCancelEdit = () => {
+                setEditingKey(null);
+                setFormError('');
+                resetResultFields();
+            };
+
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 setFormError('');
@@ -919,6 +988,7 @@
                     });
                     if (res.status === 401) { setFormError('Sesión vencida, volvé a iniciar sesión.'); handleLogout(); return; }
                     if (!res.ok) throw new Error('Error al guardar');
+                    setEditingKey(null);
                     resetResultFields();
                     cargarResultados();
                 } catch (e) {
@@ -936,6 +1006,7 @@
                         headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
                         body: JSON.stringify({ key })
                     });
+                    if (editingKey === key) { setEditingKey(null); resetResultFields(); }
                     cargarResultados();
                 } catch (e) {
                     setFormError('No se pudo eliminar.');
@@ -962,9 +1033,15 @@
                 <section id="admin" className="relative z-10 py-24">
                     <div className="container mx-auto px-4 max-w-3xl">
                         <div className="flex items-center justify-between mb-8">
-                            <h3 className="font-bebas text-3xl text-white tracking-wide">Cargar Resultado</h3>
+                            <h3 className="font-bebas text-3xl text-white tracking-wide">{editingKey ? 'Editando Resultado' : 'Cargar Resultado'}</h3>
                             <button onClick={handleLogout} className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-brand-accent uppercase tracking-wide"><LogOut size={16} /> Salir</button>
                         </div>
+                        {editingKey && (
+                            <div className="flex items-center justify-between bg-brand-accent/10 border border-brand-accent/30 rounded-xl px-4 py-3 mb-4">
+                                <p className="font-sans text-xs text-brand-accent">Editando un resultado existente. Guardar va a sobrescribirlo.</p>
+                                <button type="button" onClick={handleCancelEdit} className="text-xs font-bold text-slate-300 hover:text-white uppercase tracking-wide flex-shrink-0 ml-3">Cancelar</button>
+                            </div>
+                        )}
                         <form onSubmit={handleSubmit} className="bg-slate-800/50 border border-white/10 rounded-2xl p-8 flex flex-col gap-4 mb-6 shadow-lg">
                             <datalist id="lista-provincias">
                                 {provinciasArgentinas.map(p => <option key={p} value={p} />)}
@@ -1031,7 +1108,7 @@
                             )}
 
                             {formError && <p className="text-red-400 text-xs font-sans">{formError}</p>}
-                            <button type="submit" disabled={saving} className="flex items-center justify-center gap-2 py-3 bg-brand-accent hover:bg-brand-accentHover disabled:opacity-50 text-brand-dark font-sans font-black rounded-full uppercase tracking-wide text-sm"><Plus size={18} /> {saving ? 'Guardando...' : 'Guardar Resultado'}</button>
+                            <button type="submit" disabled={saving} className="flex items-center justify-center gap-2 py-3 bg-brand-accent hover:bg-brand-accentHover disabled:opacity-50 text-brand-dark font-sans font-black rounded-full uppercase tracking-wide text-sm"><Plus size={18} /> {saving ? 'Guardando...' : (editingKey ? 'Guardar Cambios' : 'Guardar Resultado')}</button>
                         </form>
 
                         <h4 className="font-bebas text-xl text-white tracking-wide mb-4">Resultados cargados ({resultados.length})</h4>
@@ -1045,7 +1122,10 @@
                                             {r.type === 'tiempo' && <span className="text-slate-500"> — 1°: {r.winners?.find(w=>w.position===1)?.name || '-'}</span>}
                                             {r.type !== 'partidos' && r.type !== 'tiempo' && <span className="text-slate-500"> — 1°: {r.winners?.find(w=>w.position===1)?.provincia || '-'}</span>}
                                         </div>
-                                        <button onClick={() => handleDelete(r.key)} className="text-slate-500 hover:text-red-400 p-2"><Trash2 size={16} /></button>
+                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                            <button onClick={() => handleEdit(r)} className="text-slate-500 hover:text-brand-accent p-2" title="Editar"><Edit3 size={16} /></button>
+                                            <button onClick={() => handleDelete(r.key)} className="text-slate-500 hover:text-red-400 p-2" title="Eliminar"><Trash2 size={16} /></button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -1315,7 +1395,7 @@
 
         const Sponsors = () => {
             const sponsorsData = [
-                { tier: 'Platino', styles: 'font-bebas text-4xl md:text-5xl text-slate-600 opacity-70 hover:opacity-100 transition-opacity', companies: ['A Confirmar'] },
+                { tier: 'Platino', styles: 'font-bebas text-4xl md:text-5xl text-slate-600 opacity-70 hover:opacity-100 transition-opacity', companies: [{ name: 'UNIT Santa Rosa Hotel', logo: 'https://i.ibb.co/k7PT57C/unit.png' }] },
                 { tier: 'Oro', styles: 'font-bebas text-3xl md:text-4xl text-slate-600 opacity-70 hover:opacity-100 transition-opacity', companies: ['A Confirmar'] },
                 { tier: 'Plata', styles: 'font-bebas text-2xl md:text-3xl text-slate-600 opacity-70 hover:opacity-100 transition-opacity', companies: ['A Confirmar'] },
                 { tier: 'Bronce', styles: 'font-bebas text-xl md:text-2xl text-slate-600 opacity-70 hover:opacity-100 transition-opacity', companies: ['A Confirmar'] }
@@ -1336,9 +1416,13 @@
                                     <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 md:gap-x-20">
                                         {category.companies.map((company, cIdx) => (
                                             <div key={cIdx} className="group relative">
-                                                <div className={`cursor-default select-none tracking-wide ${category.styles}`}>
-                                                    {company}
-                                                </div>
+                                                {typeof company === 'object' && company.logo ? (
+                                                    <img src={optimizeImg(company.logo, 300)} alt={company.name} className="h-16 md:h-20 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity" />
+                                                ) : (
+                                                    <div className={`cursor-default select-none tracking-wide ${category.styles}`}>
+                                                        {typeof company === 'object' ? company.name : company}
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
