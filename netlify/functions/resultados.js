@@ -3,11 +3,7 @@ const { getStore } = require("@netlify/blobs");
 const STORE_NAME = "resultados-olimpiadas";
 
 exports.handler = async (event) => {
-  const store = getStore({
-    name: STORE_NAME,
-    siteID: process.env.NETLIFY_SITE_ID,
-    token: process.env.NETLIFY_BLOBS_TOKEN,
-  });
+  const store = getStore(STORE_NAME);
   const adminToken = event.headers["x-admin-token"] || event.headers["X-Admin-Token"];
 
   if (event.httpMethod === "GET") {
