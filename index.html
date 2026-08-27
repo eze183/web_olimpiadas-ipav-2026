@@ -159,6 +159,8 @@
 
       /* Respeta la preferencia del sistema de reducir movimiento
          (usuarios con mareos/sensibilidad vestibular) */
+      /* Respeta la preferencia del sistema de reducir movimiento
+         (usuarios con mareos/sensibilidad vestibular) */
       @media (prefers-reduced-motion: reduce) {
         html { scroll-behavior: auto; }
         *, *::before, *::after {
@@ -167,11 +169,47 @@
           transition-duration: 0.01ms !important;
         }
       }
+
+      /* Pantalla de carga inicial: pura CSS, no depende de Tailwind ni de que
+         React termine de compilarse/montarse. Se saca sola apenas la app arranca. */
+      #initial-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        background: #0f172a;
+      }
+      #initial-loader .spinner {
+        width: 44px;
+        height: 44px;
+        border: 3px solid rgba(132, 204, 22, 0.2);
+        border-top-color: #84cc16;
+        border-radius: 50%;
+        animation: initial-spin 0.8s linear infinite;
+      }
+      #initial-loader span {
+        color: #94a3b8;
+        font-family: sans-serif;
+        font-size: 13px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      @keyframes initial-spin {
+        to { transform: rotate(360deg); }
+      }
     </style>
     <link rel="preconnect" href="https://wsrv.nl">
 </head>
 <body>
     <div id="root"></div>
+    <div id="initial-loader">
+        <div class="spinner"></div>
+        <span>Cargando...</span>
+    </div>
 
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
@@ -181,14 +219,15 @@
             CircleDot, Users, Activity, Dribbble, Goal, Info, ExternalLink,
             Instagram, Mail, Phone, Clock, Fish, FileText, ArrowUp, Compass,
             MessageCircle, Send, Sparkles, Bot, Loader2, ChevronDown, Search,
-            Trash2, Plus, Medal, LogOut, Edit3
+            Trash2, Plus, Medal, LogOut, Edit3, CheckCircle2
         } from 'lucide-react';
 
         // Optimiza imágenes externas (ibb.co, imgur) redimensionando y convirtiendo a WebP
         // vía wsrv.nl, un proxy de imágenes gratuito. No requiere subir nada de nuevo.
         const optimizeImg = (url, width = 400) => `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=80`;
 
-        // URL del formulario oficial de inscripción (se usa en el nav, el hero y el CTA final)
+        // URL del formulario oficial de inscripción. Sin uso activo desde que cerraron
+        // las inscripciones (ago 2026) — se deja acá por si se reabren más adelante.
         const INSCRIPCION_URL = "https://olimpicosipv.wnpower.host/Inscripciones/formulario_inscripcion";
 
         // --- GEMINI API INTEGRATION (SEGURO) ---
@@ -375,9 +414,9 @@
                                         </div>
                                     )}
                                 </div>
-                                <a href={INSCRIPCION_URL} target="_blank" rel="noopener noreferrer" className="ml-1 px-4 py-2 bg-brand-accent hover:bg-brand-accentHover text-brand-dark text-[11px] xl:text-xs font-black rounded-full transition-colors tracking-widest uppercase whitespace-nowrap">
-                                    Inscribite
-                                </a>
+                                <span className="ml-1 px-4 py-2 bg-slate-800 text-slate-400 text-[11px] xl:text-xs font-black rounded-full tracking-widest uppercase whitespace-nowrap flex items-center gap-1.5 cursor-default border border-white/5">
+                                    <CheckCircle2 size={12} /> Inscripción Finalizada
+                                </span>
                             </nav>
                             <button className="lg:hidden text-white z-50" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>{mobileMenuOpen ? <X size={28}/> : <Menu size={28}/>}</button>
                         </div>
@@ -401,9 +440,9 @@
                                         </div>
                                     )}
                                 </div>
-                                <a href={INSCRIPCION_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="mt-2 py-3 bg-brand-accent hover:bg-brand-accentHover text-brand-dark font-black rounded-xl text-center uppercase tracking-wider text-sm transition-colors">
-                                    Inscribite
-                                </a>
+                                <span className="mt-2 py-3 bg-slate-800 text-slate-400 font-black rounded-xl text-center uppercase tracking-wider text-sm flex items-center justify-center gap-2 cursor-default border border-white/5">
+                                    <CheckCircle2 size={16} /> Inscripción Finalizada
+                                </span>
                             </div>
                         </div>
                     )}
@@ -469,17 +508,13 @@
 
                             <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 animate-fade-in-up delay-300">
                                 <div className="w-full sm:w-auto flex flex-col items-center md:items-start gap-2">
-                                    <a 
-                                        href={INSCRIPCION_URL}
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="w-full sm:w-auto px-8 py-4 bg-brand-accent hover:bg-brand-accentHover text-brand-dark font-sans font-black rounded-xl transition-all transform hover:-translate-y-1 shadow-[0_0_30px_rgba(132,204,22,0.5)] flex items-center justify-center gap-2 uppercase tracking-wide text-center"
-                                    >
-                                        Inscripción a Evento
-                                    </a>
-                                    <span className="text-xs font-sans text-slate-300 flex items-center gap-1.5">
+                                    <span className="w-full sm:w-auto px-8 py-4 bg-slate-800 text-slate-300 font-sans font-black rounded-xl flex items-center justify-center gap-2 uppercase tracking-wide text-center cursor-default border border-white/10">
+                                        <CheckCircle2 size={20} className="text-brand-accent" />
+                                        Inscripción Finalizada
+                                    </span>
+                                    <span className="text-xs font-sans text-slate-400 flex items-center gap-1.5">
                                         <Info size={12} className="text-brand-accent" />
-                                        Formulario oficial de la organización nacional
+                                        Las inscripciones para este evento ya cerraron
                                     </span>
                                 </div>
                             </div>
@@ -1454,10 +1489,7 @@
 
         const Sponsors = () => {
             const sponsorsData = [
-                { tier: 'Platino', styles: 'font-bebas text-4xl md:text-5xl text-slate-500 opacity-70 hover:opacity-100 transition-opacity', companies: [{ name: 'UNIT Santa Rosa Hotel', logo: 'https://i.ibb.co/k7PT57C/unit.png' }] },
-                { tier: 'Oro', styles: 'font-bebas text-3xl md:text-4xl text-slate-500 opacity-70 hover:opacity-100 transition-opacity', companies: ['A Confirmar'] },
-                { tier: 'Plata', styles: 'font-bebas text-2xl md:text-3xl text-slate-500 opacity-70 hover:opacity-100 transition-opacity', companies: ['A Confirmar'] },
-                { tier: 'Bronce', styles: 'font-bebas text-xl md:text-2xl text-slate-500 opacity-70 hover:opacity-100 transition-opacity', companies: ['A Confirmar'] }
+                { name: 'UNIT Santa Rosa Hotel', logo: 'https://i.ibb.co/k7PT57C/unit.png' }
             ];
 
             return (
@@ -1466,25 +1498,10 @@
                         <p className="font-sans text-slate-300 max-w-2xl mx-auto">Empresas e instituciones que hacen posible este evento</p>
                     </SectionHeader>
                     <div className="container mx-auto px-4 mb-24">
-                        <div className="flex flex-col gap-16 md:gap-20 max-w-5xl mx-auto">
-                            {sponsorsData.map((category, idx) => (
-                                <div key={idx} className="flex flex-col items-center">
-                                    <h3 className="font-sans text-xs font-bold uppercase tracking-widest mb-8 text-slate-400 border-b border-slate-800 pb-2">
-                                        Categoría {category.tier}
-                                    </h3>
-                                    <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 md:gap-x-20">
-                                        {category.companies.map((company, cIdx) => (
-                                            <div key={cIdx} className="group relative">
-                                                {typeof company === 'object' && company.logo ? (
-                                                    <img src={optimizeImg(company.logo, 300)} alt={company.name} className="h-16 md:h-20 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity" />
-                                                ) : (
-                                                    <div className={`cursor-default select-none tracking-wide ${category.styles}`}>
-                                                        {typeof company === 'object' ? company.name : company}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
+                        <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 md:gap-x-20 max-w-5xl mx-auto">
+                            {sponsorsData.map((company, idx) => (
+                                <div key={idx} className="group relative">
+                                    <img src={optimizeImg(company.logo, 300)} alt={company.name} className="h-16 md:h-20 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity" />
                                 </div>
                             ))}
                         </div>
@@ -1496,19 +1513,15 @@
         const CTAInscripcion = () => (
             <section className="relative z-10 mb-24">
                 <div className="container mx-auto px-4">
-                    <div className="max-w-4xl mx-auto bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-brand-accent/30 hover:border-brand-accent/60 rounded-3xl p-8 md:p-12 text-center shadow-[0_0_40px_rgba(132,204,22,0.1)] transition-colors">
-                        <h3 className="font-bebas text-4xl md:text-5xl text-white mb-3 tracking-wide">¿Todavía no te inscribiste?</h3>
-                        <p className="font-sans text-slate-300 mb-8 max-w-xl mx-auto leading-relaxed">
-                            Del 1 al 6 de noviembre nos encontramos en Santa Rosa. Asegurá tu lugar completando el formulario de inscripción.
+                    <div className="max-w-4xl mx-auto bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-brand-accent/20 rounded-3xl p-8 md:p-12 text-center shadow-[0_0_40px_rgba(132,204,22,0.1)]">
+                        <h3 className="font-bebas text-4xl md:text-5xl text-white mb-3 tracking-wide">Las inscripciones ya cerraron</h3>
+                        <p className="font-sans text-slate-300 mb-6 max-w-xl mx-auto leading-relaxed">
+                            Gracias a todos los que ya se inscribieron. ¡Nos vemos del 1 al 6 de noviembre en Santa Rosa, La Pampa!
                         </p>
-                        <a href={INSCRIPCION_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 bg-brand-accent hover:bg-brand-accentHover text-brand-dark font-sans font-black text-lg py-5 px-10 md:px-12 rounded-xl transition-all shadow-[0_0_20px_rgba(132,204,22,0.3)] hover:shadow-[0_0_30px_rgba(132,204,22,0.5)] transform hover:-translate-y-1 uppercase tracking-wide">
-                            <ExternalLink size={22} />
-                            Inscribirme al evento
-                        </a>
-                        <p className="mt-6 text-xs font-sans text-slate-400 flex items-center justify-center gap-1.5">
-                            <Info size={12} className="text-brand-accent" />
-                            Formulario oficial de la organización nacional
-                        </p>
+                        <span className="inline-flex items-center justify-center gap-3 bg-slate-800 border border-white/10 text-slate-300 font-sans font-black text-lg py-5 px-10 md:px-12 rounded-xl uppercase tracking-wide cursor-default">
+                            <CheckCircle2 size={22} className="text-brand-accent" />
+                            Inscripción Finalizada
+                        </span>
                     </div>
                 </div>
             </section>
@@ -1596,6 +1609,10 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
+
+        // Ya arrancó la app: sacamos la pantalla de carga
+        const initialLoader = document.getElementById('initial-loader');
+        if (initialLoader) initialLoader.remove();
     </script>
 </body>
 </html>
