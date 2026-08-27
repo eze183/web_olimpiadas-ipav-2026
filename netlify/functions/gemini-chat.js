@@ -26,7 +26,7 @@ exports.handler = async (event) => {
     const { history, systemPrompt } = JSON.parse(event.body);
 
     const apiKey = process.env.GEMINI_API_KEY; // <- la key vive en Netlify, no en el código
-    const MODEL_NAME = 'gemini-2.5-flash'; // gemini-1.5-flash fue discontinuado por Google
+    const MODEL_NAME = 'gemini-3.6-flash'; // gemini-2.5-flash también fue discontinuado por Google
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
 
     const payload = {
