@@ -970,10 +970,14 @@
                 setLoading(true);
                 try {
                     const res = await fetch(RESULTADOS_API);
+                    if (!res.ok) throw new Error(`El servidor respondió con error (${res.status})`);
                     const data = await res.json();
+                    if (!Array.isArray(data)) throw new Error('Respuesta inesperada del servidor');
                     setResultados(data);
+                    setFormError('');
                 } catch (e) {
-                    setFormError('No se pudieron cargar los resultados existentes.');
+                    setResultados([]);
+                    setFormError('No se pudieron cargar los resultados existentes. ' + e.message);
                 } finally {
                     setLoading(false);
                 }
