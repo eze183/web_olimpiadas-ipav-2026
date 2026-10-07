@@ -1139,7 +1139,7 @@
                     <div className="container mx-auto px-4 mb-24">
                         {/* Filtros de día + buscador en una sola fila */}
                         <div className="result-filters flex flex-nowrap justify-center items-center gap-2 mb-10 overflow-x-auto pb-2 px-2 -mx-2">
-                            {eventDays.map(d => (
+                            {(mobile ? eventDays : eventDays.slice(0, 4)).map(d => (
                                 <button key={d.value} aria-pressed={dayFilter === d.value} onClick={() => { setDayFilter(d.value); setDisciplineSearch(''); }} className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border transition-colors whitespace-nowrap ${dayFilter === d.value ? 'bg-brand-accent text-brand-dark border-brand-accent' : 'border-white/10 text-slate-300 hover:border-brand-accent/50'}`}>{d.label}</button>
                             ))}
                             <div className="result-search relative flex-shrink-0">
