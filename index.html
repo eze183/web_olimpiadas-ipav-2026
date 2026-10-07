@@ -219,16 +219,15 @@
             CircleDot, Users, Activity, Dribbble, Goal, Info, ExternalLink,
             Instagram, Mail, Phone, Clock, Fish, FileText, ArrowUp, Compass,
             MessageCircle, Send, Sparkles, Bot, Loader2, ChevronDown, Search,
-            Trash2, Plus, Medal, LogOut, Edit3, CheckCircle2
+            Trash2, Plus, Medal, LogOut, Edit3, CheckCircle2, UtensilsCrossed
         } from 'lucide-react';
 
         // Optimiza imágenes externas (ibb.co, imgur) redimensionando y convirtiendo a WebP
         // vía wsrv.nl, un proxy de imágenes gratuito. No requiere subir nada de nuevo.
         const optimizeImg = (url, width = 400) => `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=80`;
 
-        // URL del formulario oficial de inscripción. Sin uso activo desde que cerraron
-        // las inscripciones (ago 2026) — se deja acá por si se reabren más adelante.
-        const INSCRIPCION_URL = "https://olimpicosipv.wnpower.host/Inscripciones/formulario_inscripcion";
+        // Acceso al sistema oficial de las Olimpiadas.
+        const SISTEMA_URL = "https://olimpicosipv.wnpower.host/Inscripciones/login";
 
         // --- GEMINI API INTEGRATION (SEGURO) ---
         // La API key ya NO está acá. Vive en Netlify (variable de entorno GEMINI_API_KEY)
@@ -414,9 +413,9 @@
                                         </div>
                                     )}
                                 </div>
-                                <span className="ml-1 px-4 py-2 bg-slate-800 text-slate-400 text-[11px] xl:text-xs font-black rounded-full tracking-widest uppercase whitespace-nowrap flex items-center gap-1.5 cursor-default border border-white/5">
-                                    <CheckCircle2 size={12} /> Inscripción Finalizada
-                                </span>
+                                <a href={SISTEMA_URL} className="ml-1 px-4 py-2 bg-brand-accent hover:bg-brand-accentHover text-brand-dark text-[11px] xl:text-xs font-black rounded-full tracking-widest uppercase whitespace-nowrap flex items-center gap-1.5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent">
+                                    <ExternalLink size={12} /> Acceso a sistema
+                                </a>
                             </nav>
                             <button className="lg:hidden text-white z-50" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>{mobileMenuOpen ? <X size={28}/> : <Menu size={28}/>}</button>
                         </div>
@@ -440,9 +439,9 @@
                                         </div>
                                     )}
                                 </div>
-                                <span className="mt-2 py-3 bg-slate-800 text-slate-400 font-black rounded-xl text-center uppercase tracking-wider text-sm flex items-center justify-center gap-2 cursor-default border border-white/5">
-                                    <CheckCircle2 size={16} /> Inscripción Finalizada
-                                </span>
+                                <a href={SISTEMA_URL} className="mt-2 py-3 bg-brand-accent hover:bg-brand-accentHover text-brand-dark font-black rounded-xl text-center uppercase tracking-wider text-sm flex items-center justify-center gap-2 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent">
+                                    <ExternalLink size={16} /> Acceso a sistema
+                                </a>
                             </div>
                         </div>
                     )}
@@ -508,13 +507,13 @@
 
                             <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 animate-fade-in-up delay-300">
                                 <div className="w-full sm:w-auto flex flex-col items-center md:items-start gap-2">
-                                    <span className="w-full sm:w-auto px-8 py-4 bg-slate-800 text-slate-300 font-sans font-black rounded-xl flex items-center justify-center gap-2 uppercase tracking-wide text-center cursor-default border border-white/10">
-                                        <CheckCircle2 size={20} className="text-brand-accent" />
-                                        Inscripción Finalizada
-                                    </span>
+                                    <a href={SISTEMA_URL} className="w-full sm:w-auto px-8 py-4 bg-brand-accent hover:bg-brand-accentHover text-brand-dark font-sans font-black rounded-xl flex items-center justify-center gap-2 uppercase tracking-wide text-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent">
+                                        <ExternalLink size={20} />
+                                        Acceso a sistema
+                                    </a>
                                     <span className="text-xs font-sans text-slate-400 flex items-center gap-1.5">
                                         <Info size={12} className="text-brand-accent" />
-                                        Las inscripciones para este evento ya cerraron
+                                        Ingreso al sistema oficial de las Olimpiadas
                                     </span>
                                 </div>
                             </div>
@@ -720,28 +719,147 @@
             );
         };
 
+        const dinnerReception = 'Mini arabitos, sándwiches de miga, brusquetas y hojaldre de pollo';
+        const dinnerVenue = 'Círculo de Suboficiales';
+        const toayComplex = 'Complejo Recreativo Horacio del Campo';
+
+        // Cronograma general del 21/09. Solo el domingo tiene horarios confirmados.
+        // Los días 1 a 6 del menú corresponden al domingo 1 al viernes 6 de noviembre.
         const scheduleData = [
-            { day: 'Domingo', date: '01 Nov', activities: [{ title: 'Acreditaciones de delegaciones (A Confirmar)' }, { title: 'Acto inaugural (A Confirmar)' }, { title: 'Cena de bienvenida (A Confirmar)' }] },
-            { day: 'Lunes', date: '02 Nov', activities: [{ title: 'Cronograma y Sedes a Confirmar' }] },
-            { day: 'Martes', date: '03 Nov', activities: [{ title: 'Cronograma y Sedes a Confirmar' }] },
-            { day: 'Miércoles', date: '04 Nov', activities: [{ title: 'Cronograma y Sedes a Confirmar' }] },
-            { day: 'Jueves', date: '05 Nov', activities: [{ title: 'Cronograma y Sedes a Confirmar' }] },
-            { day: 'Viernes', date: '06 Nov', activities: [{ title: 'Día libre y Cena de despedida (A Confirmar)' }] }
+            {
+                day: 'Domingo', date: '01 Nov', id: 'domingo',
+                activities: [
+                    { title: 'Acreditaciones', time: '10:00 a 14:00', location: 'Centro Cultural Medasur', city: 'Santa Rosa' },
+                    { title: 'Carritos y almuerzo', time: '13:00 a 17:00', location: 'Club Rucalén', city: 'Santa Rosa' },
+                    { title: 'Acto inaugural', time: '18:00', location: 'Centro Cultural Medasur', city: 'Santa Rosa' },
+                    { title: 'Cena', time: '21:30 a 02:00 (del lunes)', location: dinnerVenue, city: 'Santa Rosa' }
+                ],
+                dinner: { starter: 'Bondiola, lomo de cerdo, queso y ensalada rusa', main: 'Muslo de pollo con ensalada de lechuga y tomate', dessert: 'Helado' }
+            },
+            {
+                day: 'Lunes', date: '02 Nov', id: 'lunes',
+                activities: [
+                    { title: 'Jornada pedestre, ciclismo y MTB', location: toayComplex, city: 'Toay' },
+                    { title: 'Tenis de mesa', location: 'Asociación de Tenis de Mesa', city: 'Santa Rosa' },
+                    { title: 'Tejo', location: toayComplex, city: 'Toay' },
+                    { title: 'Actividad solidaria', location: 'Placita en San Juan e Italia', city: 'Toay' },
+                    { title: 'Pool', location: 'Pampa Bowling', city: 'Santa Rosa' },
+                    { title: 'Truco', location: dinnerVenue, city: 'Santa Rosa' },
+                    { title: 'Cena', location: dinnerVenue, city: 'Santa Rosa' }
+                ],
+                dinner: { starter: 'Mix de fiambres con arroz primavera', main: 'Sorrentinos con bolognesa y crema', dessert: 'Ensalada de frutas' }
+            },
+            {
+                day: 'Martes', date: '03 Nov', id: 'martes',
+                activities: [
+                    { title: 'Natación', location: 'Club All Boys', city: 'Santa Rosa' },
+                    { title: 'Pádel', location: 'Cristal Pádel Club', city: 'Santa Rosa' },
+                    { title: 'Tenis', location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
+                    { title: 'Bochas', location: 'Club Barrio Fitte', city: 'Santa Rosa' },
+                    { title: 'Voley', location: 'Club Sportivo Toay', city: 'Toay' },
+                    { title: 'Tejo', location: toayComplex, city: 'Toay' },
+                    { title: 'Fútbol', location: toayComplex, city: 'Toay' },
+                    { title: 'Beach voley', location: toayComplex, city: 'Toay' },
+                    { title: 'Pool', location: 'Pampa Bowling', city: 'Santa Rosa' },
+                    { title: 'Truco', location: dinnerVenue, city: 'Santa Rosa' },
+                    { title: 'Cena y cierre de la actividad solidaria', location: dinnerVenue, city: 'Santa Rosa' }
+                ],
+                dinner: { starter: 'Empanadas de carne y de jamón y queso (una por persona)', main: 'Carré de cerdo con papas, verduras y salsa suave de mostaza', dessert: 'Helado' }
+            },
+            {
+                day: 'Miércoles', date: '04 Nov', id: 'miercoles',
+                activities: [
+                    { title: 'Pádel', location: 'Cristal Pádel Club', city: 'Santa Rosa' },
+                    { title: 'Tenis', location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
+                    { title: 'Básquet', location: 'Polideportivo Butaló', city: 'Santa Rosa' },
+                    { title: 'Bochas', location: 'Club Barrio Fitte', city: 'Santa Rosa' },
+                    { title: 'Voley', location: 'Club Sportivo Toay', city: 'Toay' },
+                    { title: 'Tejo', location: toayComplex, city: 'Toay' },
+                    { title: 'Newcom', location: 'Club Guardia del Monte', city: 'Toay' },
+                    { title: 'Fútbol', location: toayComplex, city: 'Toay' },
+                    { title: 'Beach voley', location: toayComplex, city: 'Toay' },
+                    { title: 'Pool', location: 'Pampa Bowling', city: 'Santa Rosa' },
+                    { title: 'Truco', location: dinnerVenue, city: 'Santa Rosa' },
+                    { title: 'Cena (Olimpeña)', location: dinnerVenue, city: 'Santa Rosa' }
+                ],
+                dinner: { starter: 'Canastas caprese', main: 'Milanesa de pollo con puré', dessert: 'Ensalada de frutas' }
+            },
+            {
+                day: 'Jueves', date: '05 Nov', id: 'jueves',
+                activities: [
+                    { title: 'Pádel', location: 'Cristal Pádel Club', city: 'Santa Rosa' },
+                    { title: 'Tenis', location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
+                    { title: 'Básquet', location: 'Polideportivo Butaló', city: 'Santa Rosa' },
+                    { title: 'Bochas', location: 'Club Barrio Fitte', city: 'Santa Rosa' },
+                    { title: 'Tejo', location: toayComplex, city: 'Toay' },
+                    { title: 'Newcom', location: 'Club Guardia del Monte', city: 'Toay' },
+                    { title: 'Fútbol', location: toayComplex, city: 'Toay' },
+                    { title: 'Beach voley', location: toayComplex, city: 'Toay' },
+                    { title: 'Pool', location: 'Pampa Bowling', city: 'Santa Rosa' },
+                    { title: 'Truco', location: dinnerVenue, city: 'Santa Rosa' },
+                    { title: 'Cena (fiesta temática)', location: dinnerVenue, city: 'Santa Rosa' }
+                ],
+                dinner: { starter: 'Mix de fiambres con papa y huevo', main: 'Milanesa de carne con ensalada', dessert: 'Helado' }
+            },
+            {
+                day: 'Viernes', date: '06 Nov', id: 'viernes',
+                activities: [
+                    { title: 'Pesca', location: 'Laguna Don Tomás', city: 'Santa Rosa' },
+                    { title: 'Tarde libre' },
+                    { title: 'Cena', location: dinnerVenue, city: 'Santa Rosa' }
+                ],
+                dinner: { starter: 'Tablas de fiambres', main: 'Asado con ensaladas y papas fritas', dessert: 'Mesa de dulces' }
+            }
         ];
+
+        const DinnerMenu = ({ item }) => (
+            <details className="group/menu border-t border-brand-accent/20 bg-brand-accent/5">
+                <summary className="list-none [&::-webkit-details-marker]:hidden flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-brand-accent hover:bg-brand-accent/10 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-brand-accent">
+                    <span className="flex items-center gap-2 font-sans font-bold text-sm">
+                        <UtensilsCrossed size={18} aria-hidden="true" />
+                        <span>Menú de la cena<span className="sr-only"> del {item.day.toLowerCase()} {item.date}</span></span>
+                    </span>
+                    <ChevronDown size={18} className="shrink-0 transition-transform group-open/menu:rotate-180" aria-hidden="true" />
+                </summary>
+                <dl className="px-5 pb-5 space-y-4 font-sans">
+                    {[
+                        ['Recepción', dinnerReception],
+                        ['Entrada', item.dinner.starter],
+                        ['Principal', item.dinner.main],
+                        ['Postre', item.dinner.dessert]
+                    ].map(([label, dish]) => (
+                        <div key={label}>
+                            <dt className="text-[11px] font-bold uppercase tracking-wider text-brand-accent mb-1">{label}</dt>
+                            <dd className="text-sm text-slate-200 leading-relaxed">{dish}</dd>
+                        </div>
+                    ))}
+                </dl>
+            </details>
+        );
 
         const Schedule = () => {
             return (
                 <section id="cronograma" className="relative z-10">
                     <SectionHeader title="Cronograma de Actividades" />
                     <div className="container mx-auto px-4 mb-24">
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {scheduleData.map((item, index) => (
-                                <div key={index} className="bg-slate-800/50 border border-white/5 rounded-xl overflow-hidden hover:border-brand-accent/30 transition-all duration-300 group shadow-lg">
+                        <div className="mb-8 text-center font-sans">
+                            <p className="text-slate-300 text-sm leading-relaxed">Actividades, sedes y menú de cada cena, del 1 al 6 de noviembre.</p>
+                            <p className="text-slate-400 text-xs mt-2 leading-relaxed">Solo el domingo 1/11 tiene horarios confirmados. Los horarios de los demás días se informarán próximamente.</p>
+                            <p className="text-slate-400 text-xs mt-2">Abrí “Menú de la cena” en cada día para ver recepción, entrada, principal y postre.</p>
+                        </div>
+                        <nav aria-label="Días del cronograma" className="flex flex-wrap justify-center gap-2 mb-8">
+                            {scheduleData.map(item => (
+                                <a key={item.id} href={`#cronograma-${item.id}`} className="px-4 py-2 rounded-full border border-white/10 bg-slate-800/50 text-sm font-sans text-slate-200 hover:text-brand-accent hover:border-brand-accent/40 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent">{item.day} {item.date.slice(0, 2)}</a>
+                            ))}
+                        </nav>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+                            {scheduleData.map(item => (
+                                <article key={item.id} id={`cronograma-${item.id}`} aria-labelledby={`dia-${item.id}`} className="scroll-mt-36 bg-slate-800/50 border border-white/5 rounded-xl overflow-hidden hover:border-brand-accent/30 transition-all duration-300 group shadow-lg flex flex-col">
                                     <div className="bg-slate-800 p-4 border-b border-white/5 flex justify-between items-center group-hover:bg-slate-700/50 transition-colors">
-                                        <span className="font-bebas text-2xl text-white tracking-wide mt-1">{item.day}</span>
+                                        <h3 id={`dia-${item.id}`} className="font-bebas text-2xl text-white tracking-wide mt-1">{item.day}</h3>
                                         <span className="text-brand-accent font-sans font-bold bg-brand-accent/10 px-3 py-1 rounded-full text-sm">{item.date}</span>
                                     </div>
-                                    <div className="p-5 space-y-6">
+                                    <div className="p-5 space-y-5">
                                         {item.activities.map((act, actIndex) => (
                                             <div key={actIndex} className="relative pl-6 border-l border-slate-700">
                                                 <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-600 group-hover:bg-brand-accent transition-colors"></div>
@@ -753,12 +871,13 @@
                                                         </div>
                                                     )}
                                                     <h4 className="text-slate-200 font-sans font-medium leading-tight mb-1">{act.title}</h4>
-                                                    {act.location && (<div className="flex items-center gap-1.5 text-xs font-sans text-slate-400 mt-1"><MapPin size={10} />{act.location}</div>)}
+                                                    {act.location && (<div className="flex items-start gap-1.5 text-xs font-sans text-slate-400 mt-1 leading-relaxed"><MapPin size={12} className="shrink-0 mt-0.5" aria-hidden="true" /><span>{act.location}<span className="block text-slate-400">{act.city}</span></span></div>)}
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
-                                </div>
+                                    <DinnerMenu item={item} />
+                                </article>
                             ))}
                         </div>
                     </div>
@@ -1519,14 +1638,14 @@
             <section className="relative z-10 mb-24">
                 <div className="container mx-auto px-4">
                     <div className="max-w-4xl mx-auto bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-brand-accent/20 rounded-3xl p-8 md:p-12 text-center shadow-[0_0_40px_rgba(132,204,22,0.1)]">
-                        <h3 className="font-bebas text-4xl md:text-5xl text-white mb-3 tracking-wide">Las inscripciones ya cerraron</h3>
+                        <h3 className="font-bebas text-4xl md:text-5xl text-white mb-3 tracking-wide">Acceso al sistema de las Olimpiadas</h3>
                         <p className="font-sans text-slate-300 mb-6 max-w-xl mx-auto leading-relaxed">
-                            Gracias a todos los que ya se inscribieron. ¡Nos vemos del 1 al 6 de noviembre en Santa Rosa, La Pampa!
+                            Ingresá al sistema oficial. ¡Nos vemos del 1 al 6 de noviembre en Santa Rosa, La Pampa!
                         </p>
-                        <span className="inline-flex items-center justify-center gap-3 bg-slate-800 border border-white/10 text-slate-300 font-sans font-black text-lg py-5 px-10 md:px-12 rounded-xl uppercase tracking-wide cursor-default">
-                            <CheckCircle2 size={22} className="text-brand-accent" />
-                            Inscripción Finalizada
-                        </span>
+                        <a href={SISTEMA_URL} className="inline-flex items-center justify-center gap-3 bg-brand-accent hover:bg-brand-accentHover text-brand-dark font-sans font-black text-lg py-5 px-10 md:px-12 rounded-xl uppercase tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent">
+                            <ExternalLink size={22} />
+                            Acceso a sistema
+                        </a>
                     </div>
                 </div>
             </section>
