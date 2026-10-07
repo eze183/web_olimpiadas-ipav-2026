@@ -1,8 +1,10 @@
-const { getStore } = require("@netlify/blobs");
+const { connectLambda, getStore } = require("@netlify/blobs");
 
 const STORE_NAME = "resultados-olimpiadas";
 
 exports.handler = async (event) => {
+  // El contexto de Blobs no se inicializa automáticamente en handlers Lambda.
+  connectLambda(event);
   const store = getStore(STORE_NAME);
   const adminToken = event.headers["x-admin-token"] || event.headers["X-Admin-Token"];
 
