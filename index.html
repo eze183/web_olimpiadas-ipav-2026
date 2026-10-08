@@ -64,6 +64,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/venue-map.css" />
     
     <!-- Babel for JSX compilation in browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -169,7 +170,6 @@
       .mobile-layout #historia .text-justify { text-align: left; font-size: 14px; }
       .mobile-layout .venue-card { padding: 20px; }
       .mobile-layout .venue-card h3 { margin-bottom: 16px; }
-      .mobile-layout .venue-map { height: 260px; }
       .mobile-layout .discipline-grid { gap: 12px; grid-template-columns: repeat(2,minmax(0,1fr)); }
       .mobile-layout .discipline-card { padding: 16px 10px; gap: 10px; transform: none; }
       .mobile-layout .discipline-card .discipline-info { position: absolute; top: 8px; right: 8px; }
@@ -292,6 +292,7 @@
         import React, { useState, useEffect, useRef } from 'react';
         import ReactDOM from 'react-dom/client';
         import { createPortal } from 'react-dom';
+        import VenueMap from './assets/venue-map.js';
         import { 
             Lock, Menu, X, Calendar, MapPin, Trophy, Bike, Target, Waves, 
             CircleDot, Users, Activity, Dribbble, Goal, Info, ExternalLink,
@@ -718,30 +719,11 @@
         };
 
         const Venues = () => {
-            const mobile = useMobileLayout();
             return (
                 <section id="sedes" className="relative z-10">
                     <SectionHeader title="Sedes del Evento" />
                     <div className="container mx-auto px-4 mb-24">
-                        <div className="grid lg:grid-cols-3 gap-8 items-start">
-                            <div className="venue-card lg:col-span-1 bg-slate-800/50 border border-white/5 rounded-2xl p-8 hover:border-brand-accent/30 transition-colors shadow-xl">
-                                <h3 className="font-bebas text-3xl text-white mb-6 flex items-center gap-2 tracking-wide"><MapPin className="text-brand-accent mb-1" />Sede Principal</h3>
-                                <div className="space-y-6">
-                                    <div className="relative pl-4 border-l-2 border-brand-accent">
-                                        <h4 className="font-sans font-semibold text-lg text-slate-200">Salón Círculo de Suboficiales</h4>
-                                        <p className="text-slate-300 text-sm">Martin Luther King 2245 (Confirmada)</p>
-                                        {mobile && <a href="https://www.google.com/maps/search/?api=1&query=Circulo+de+Suboficiales+Martin+Luther+King+2245+Santa+Rosa+La+Pampa" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 min-h-[44px] text-sm text-brand-accent font-bold">Cómo llegar<ExternalLink size={14} /></a>}
-                                    </div>
-                                    <div className="relative pl-4 border-l-2 border-slate-700 opacity-60">
-                                        <h4 className="font-sans font-semibold text-lg text-slate-200">Resto de Sedes Deportivas</h4>
-                                        <p className="text-slate-300 text-sm italic">Ver listado en cada disciplina</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="venue-map lg:col-span-2 h-[500px] rounded-2xl overflow-hidden shadow-2xl border border-white/10 relative group">
-                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3202.0461876527585!2d-64.2758197!3d-36.6251433!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95c2cd1776953465%3A0xc9b0c9508dfd5569!2sC%C3%ADrculo%20de%20Suboficiales%20y%20Agentes!5e0!3m2!1ses!2sar!4v1700000000000!5m2!1ses!2sar" width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" className="grayscale hover:grayscale-0 transition-all duration-700" title="Mapa de Sedes"></iframe>
-                            </div>
-                        </div>
+                        <VenueMap />
                     </div>
                 </section>
             );
