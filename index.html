@@ -859,14 +859,15 @@
         const dinnerVenue = 'Círculo de Suboficiales';
         const toayComplex = 'Complejo Recreativo Horacio del Campo';
 
-        // Cronograma general del 21/09. Solo el domingo tiene horarios confirmados.
+        // Cronograma general actualizado según la planilla del 08/10.
+        // Por indicación de publicación, solo se muestran los horarios del domingo.
         // Los días 1 a 6 del menú corresponden al domingo 1 al viernes 6 de noviembre.
         const scheduleData = [
             {
                 day: 'Domingo', date: '01 Nov', id: 'domingo',
                 activities: [
                     { title: 'Acreditaciones', time: '10:00 a 14:00', location: 'Centro Cultural Medasur', city: 'Santa Rosa' },
-                    { title: 'Almuerzo libre', time: '13:00 a 17:00', location: 'Club Rucalén', city: 'Santa Rosa' },
+                    { title: 'Almuerzo libre', time: '13:00 a 17:00' },
                     { title: 'Acto inaugural', time: '18:00', location: 'Centro Cultural Medasur', city: 'Santa Rosa' },
                     { title: 'Cena', time: '21:30 a 02:00 (del lunes)', location: dinnerVenue, city: 'Santa Rosa' }
                 ],
@@ -889,7 +890,6 @@
                 day: 'Martes', date: '03 Nov', id: 'martes',
                 activities: [
                     { title: 'Natación', location: 'Club All Boys', city: 'Santa Rosa' },
-                    { title: 'Pádel', location: 'Cristal Pádel Club', city: 'Santa Rosa' },
                     { title: 'Tenis', location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
                     { title: 'Bochas', location: 'Club Barrio Fitte', city: 'Santa Rosa' },
                     { title: 'Voley', location: 'Club Sportivo Toay', city: 'Toay' },
@@ -909,10 +909,7 @@
                     { title: 'Tenis', location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
                     { title: 'Bochas', location: 'Club Barrio Fitte', city: 'Santa Rosa' },
                     { title: 'Voley', location: 'Club Sportivo Toay', city: 'Toay' },
-                    { title: 'Tejo', location: toayComplex, city: 'Toay' },
                     { title: 'Newcom', location: 'Club Guardia del Monte', city: 'Toay' },
-                    { title: 'Fútbol', location: toayComplex, city: 'Toay' },
-                    { title: 'Beach voley', location: toayComplex, city: 'Toay' },
                     { title: 'Pool', location: 'Pampa Bowling', city: 'Santa Rosa' },
                     { title: 'Truco', location: dinnerVenue, city: 'Santa Rosa' },
                     { title: 'Cena (Olimpeña)', location: dinnerVenue, city: 'Santa Rosa' }
@@ -922,16 +919,12 @@
             {
                 day: 'Jueves', date: '05 Nov', id: 'jueves',
                 activities: [
-                    { title: 'Pádel', location: 'Cristal Pádel Club', city: 'Santa Rosa' },
-                    { title: 'Tenis', location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
                     { title: 'Básquet', location: 'Polideportivo Butaló', city: 'Santa Rosa' },
-                    { title: 'Tejo', location: toayComplex, city: 'Toay' },
-                    { title: 'Newcom', location: 'Club Guardia del Monte', city: 'Toay' },
+                    { title: 'Pádel', location: 'Cristal Pádel Club', city: 'Santa Rosa' },
                     { title: 'Fútbol', location: toayComplex, city: 'Toay' },
                     { title: 'Beach voley', location: toayComplex, city: 'Toay' },
-                    { title: 'Pool', location: 'Pampa Bowling', city: 'Santa Rosa' },
-                    { title: 'Truco', location: dinnerVenue, city: 'Santa Rosa' },
-                    { title: 'Cena (fiesta temática)', location: dinnerVenue, city: 'Santa Rosa' }
+                    { title: 'Newcom', location: 'Club Guardia del Monte', city: 'Toay' },
+                    { title: 'Cena (fiesta temática: Argentina)', location: dinnerVenue, city: 'Santa Rosa' }
                 ],
                 dinner: { starter: 'Mix de fiambres con papa y huevo', main: 'Milanesa de carne con ensalada', dessert: 'Helado' }
             },
