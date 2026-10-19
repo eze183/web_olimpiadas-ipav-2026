@@ -745,7 +745,7 @@
             { name: 'Newcom', icon: <Users size={32} />, categories: ['+40'], venues: ['Club Guardia del Monte (Av. 9 de Julio y Bv. Brown, Toay)'], image: 'https://i.ibb.co/8D9Rh48C/NEWCOM.png' },
             { name: 'Ciclismo Calle', icon: <Bike size={32} />, categories: ['Masculino', 'Femenino'], venues: ['Complejo Recreativo Municipal Horacio del Campo (Bv. Brown y 13 de Caballería, Toay)'], image: 'https://i.ibb.co/V0xCZST2/CICLISMO-RUTA.png' },
             { name: 'Tenis', icon: <Activity size={32} />, categories: ['Masculino', 'Femenino'], venues: ['Centro Empleado de Comercio (México 1810, Santa Rosa)'], image: 'https://i.ibb.co/21XR5SfG/TENIS.png' },
-            { name: 'Bochas', icon: <CircleDot size={32} />, categories: ['Tríos'], venues: ['Club Social y Deportivo Barrio Fitte (Perú 1053, Santa Rosa)'], image: 'https://i.ibb.co/Xf4HM6My/BOCHAS.png' },
+            { name: 'Bochas', icon: <CircleDot size={32} />, categories: ['Tríos'], venues: ['Club Social y Deportivo Barrio Fitte (Perú 1053, Santa Rosa)'], mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Per%C3%BA%201053%2C%20Santa%20Rosa%2C%20La%20Pampa%2C%20Argentina', image: 'https://i.ibb.co/Xf4HM6My/BOCHAS.png' },
             { name: 'Tejo', icon: <Target size={32} />, categories: ['Caballeros', 'Damas', 'Mixto'], venues: ['Complejo Recreativo Municipal Horacio del Campo (Bv. Brown y 13 de Caballería, Toay)'], image: 'https://i.ibb.co/zVYvbD7B/TEJO.png' },
             { name: 'Pool', icon: <CircleDot size={32} />, categories: ['Dobles'], venues: ['Pampa Bowling (Av. Circunvalación Ing. Marzo 2506, Santa Rosa)'], image: 'https://i.ibb.co/R4BNrGRp/POOL.png' }
         ];
@@ -832,7 +832,7 @@
                                                         <span className="text-slate-300 italic">{venue}</span>
                                                     ) : (
                                                         <a 
-                                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`} 
+                                                            href={selectedDiscipline.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`}
                                                             target="_blank" 
                                                             rel="noopener noreferrer" 
                                                             className="text-slate-300 hover:text-brand-accent transition-colors flex items-start gap-1.5 group underline underline-offset-4 decoration-white/10 hover:decoration-brand-accent"
@@ -858,7 +858,10 @@
         const dinnerReception = 'Mini arabitos, sándwiches de miga, brusquetas y hojaldre de pollo';
         const dinnerVenue = 'Círculo de Suboficiales';
         const toayComplex = 'Complejo Recreativo Horacio del Campo';
-        const disciplineMapsUrl = name => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(disciplinesData.find(item => item.name === name).venues[0])}`;
+        const disciplineMapsUrl = name => {
+            const discipline = disciplinesData.find(item => item.name === name);
+            return discipline.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(discipline.venues[0])}`;
+        };
 
         // Cronograma general actualizado según la planilla del 08/10.
         // Por indicación de publicación, solo se muestran los horarios del domingo.
