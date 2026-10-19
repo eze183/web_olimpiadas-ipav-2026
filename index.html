@@ -489,7 +489,7 @@
                 { label: 'SEDES', href: '#sedes' },
                 { label: 'DISCIPLINAS', href: '#disciplinas' },
                 { label: 'CRONOGRAMA', href: '#cronograma' },
-                { label: 'RESULTADOS', href: '#resultados' },
+                { label: 'FIXTURE', href: '#fixture' },
                 { label: 'REGLAMENTOS', href: '#reglamentos' },
                 { label: 'TURISMO', href: '#turismo' },
             ];
@@ -1063,144 +1063,28 @@
 
         const emptyMatch = () => ({ id: crypto.randomUUID ? crypto.randomUUID() : String(Math.random()), stage: '', teamA: '', scoreA: '', teamB: '', scoreB: '' });
 
-        const Resultados = () => {
-            const mobile = useMobileLayout();
-            const [resultados, setResultados] = useState([]);
-            const [loading, setLoading] = useState(true);
-            const [error, setError] = useState(null);
-            const [disciplineSearch, setDisciplineSearch] = useState('');
-
-            // Día activo: el más cercano al actual con resultados, o el primero de la lista
-            const getInitialDay = () => {
-                const today = new Date().toISOString().slice(0, 10);
-                const future = eventDays.filter(d => d.value >= today);
-                return future.length > 0 ? future[0].value : eventDays[eventDays.length - 1].value;
-            };
-            const [dayFilter, setDayFilter] = useState(getInitialDay);
-
-            const cargarResultados = async () => {
-                setLoading(true);
-                setError(null);
-                try {
-                    const res = await fetch(RESULTADOS_API);
-                    if (!res.ok) throw new Error('No se pudieron cargar los resultados');
-                    const data = await res.json();
-                    data.sort((a, b) => (a.day + a.discipline + a.category).localeCompare(b.day + b.discipline + b.category));
-                    setResultados(data);
-                    // Si el día activo no tiene resultados pero otro sí, saltar al primero con datos
-                    const initial = getInitialDay();
-                    const hasInitial = data.some(r => r.day === initial);
-                    if (!hasInitial && data.length > 0) {
-                        setDayFilter(data[0].day);
-                    }
-                } catch (e) {
-                    setError(e.message);
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            useEffect(() => { cargarResultados(); }, []);
-
-            const filtrados = resultados
-                .filter(r => r.day === dayFilter)
-                .filter(r => disciplineSearch === '' || (mobile ? normalizeSearch(r.discipline).includes(normalizeSearch(disciplineSearch)) : r.discipline.toLowerCase().includes(disciplineSearch.toLowerCase())));
-
-            return (
-                <section id="resultados" className="relative z-10">
-                    <SectionHeader title="Resultados">
-                        <p className="font-sans text-slate-300 max-w-2xl mx-auto">Ganadores y marcadores de cada disciplina, día por día</p>
-                    </SectionHeader>
-                    <div className="container mx-auto px-4 mb-24">
-                        {/* Filtros de día + buscador en una sola fila */}
-                        <div className="result-filters flex flex-nowrap justify-center items-center gap-2 mb-10 overflow-x-auto pb-2 px-2 -mx-2">
-                            {(mobile ? eventDays : eventDays.slice(0, 4)).map(d => (
-                                <button key={d.value} aria-pressed={dayFilter === d.value} onClick={() => { setDayFilter(d.value); setDisciplineSearch(''); }} className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border transition-colors whitespace-nowrap ${dayFilter === d.value ? 'bg-brand-accent text-brand-dark border-brand-accent' : 'border-white/10 text-slate-300 hover:border-brand-accent/50'}`}>{d.label}</button>
-                            ))}
-                            <div className="result-search relative flex-shrink-0">
-                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                <input
-                                    type="text"
-                                    value={disciplineSearch}
-                                    aria-label="Buscar disciplina en resultados"
-                                    onChange={(e) => setDisciplineSearch(e.target.value)}
-                                    placeholder="Buscar disciplina..."
-                                    className="bg-slate-800/50 border border-white/10 rounded-full py-2 pl-8 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-accent transition-colors font-sans text-xs w-44"
-                                />
-                            </div>
+        const FIXTURE_URL = 'https://olimpicosipv.wnpower.host/publico';
+        const Fixture = () => (
+            <section id="fixture" className="relative z-10 scroll-mt-36">
+                <span id="resultados" className="absolute top-0 scroll-mt-36" aria-hidden="true"></span>
+                <SectionHeader title="Fixture">
+                    <p className="font-sans text-slate-300 max-w-2xl mx-auto">Consultá los encuentros de cada disciplina en el panel público oficial.</p>
+                </SectionHeader>
+                <div className="container mx-auto px-4 mb-24">
+                    <div className="max-w-3xl mx-auto bg-slate-800/50 border border-brand-accent/25 rounded-2xl p-6 md:p-10 text-center shadow-lg">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-accent/10 text-brand-accent mb-5">
+                            <Calendar size={28} aria-hidden="true" />
                         </div>
-
-                        {loading && <p className="text-center text-slate-400 font-sans">Cargando resultados...</p>}
-                        {error && <div role="alert" className="text-center text-red-400 font-sans"><p>{error}</p>{mobile && <button onClick={cargarResultados} className="min-h-[44px] mt-3 px-4 py-2 rounded-xl border border-white/20 text-slate-200">Volver a intentar</button>}</div>}
-                        {!loading && !error && filtrados.length === 0 && (
-                            <p className="text-center text-slate-400 font-sans">
-                                {disciplineSearch ? `No hay resultados para "${disciplineSearch}" en este día.` : 'Todavía no hay resultados cargados para este día.'}
-                            </p>
-                        )}
-
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto items-start">
-                            {filtrados.map((r) => (
-                                <div key={r.key} className="bg-slate-800/50 border border-white/5 rounded-2xl p-6 hover:border-brand-accent/30 transition-colors shadow-lg">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <h3 className="font-bebas text-2xl text-white tracking-wide">{r.discipline}</h3>
-                                        <Trophy className="text-brand-accent/60 w-5 h-5 flex-shrink-0" />
-                                    </div>
-                                    <p className="font-sans text-xs text-slate-400 uppercase tracking-widest mb-4">{r.category} · {dayLabel(r.day)}</p>
-
-                                    {/* Tipo: partidos */}
-                                    {r.type === 'partidos' && (
-                                        <div className="space-y-2">
-                                            {(r.matches || []).map((m) => (
-                                                <div key={m.id} className="border border-white/5 rounded-lg px-3 py-2 bg-slate-900/40">
-                                                    {m.stage && <p className="text-[10px] text-brand-accent uppercase tracking-widest mb-1 font-bold">{m.stage}</p>}
-                                                    <div className="flex items-center justify-between font-sans text-sm text-slate-200">
-                                                        <span className="truncate">{m.teamA}</span>
-                                                        <span className="font-bebas text-lg text-white px-2 whitespace-nowrap">{m.scoreA} - {m.scoreB}</span>
-                                                        <span className="truncate text-right">{m.teamB}</span>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {/* Tipo: tiempo */}
-                                    {r.type === 'tiempo' && (
-                                        <div className="space-y-2">
-                                            {(r.winners || []).filter(w => w.name).map((w) => (
-                                                <div key={w.position} className={`flex items-center gap-3 border rounded-lg px-3 py-2 ${medalStyles[w.position]?.border || 'border-white/5'}`}>
-                                                    <span className={`font-bebas text-lg w-8 flex-shrink-0 ${medalStyles[w.position]?.color || 'text-slate-300'}`}>{medalStyles[w.position]?.label || w.position}</span>
-                                                    <div className="flex-grow min-w-0">
-                                                        <p className="font-sans text-sm text-slate-200 truncate">{w.name} <span className="text-slate-400">· {w.provincia}</span></p>
-                                                    </div>
-                                                    <span className="font-mono text-sm text-brand-accent whitespace-nowrap">{w.time}</span>
-                                                </div>
-                                            ))}
-                                            {r.linkCompleto && (
-                                                <a href={r.linkCompleto} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs text-slate-300 hover:text-brand-accent transition-colors mt-2 font-sans">
-                                                    <ExternalLink size={14} /> Ver todos los tiempos
-                                                </a>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* Tipo: podio simple */}
-                                    {r.type !== 'partidos' && r.type !== 'tiempo' && (
-                                        <div className="space-y-2">
-                                            {(r.winners || []).filter(w => w.provincia).map((w) => (
-                                                <div key={w.position} className={`flex items-center gap-3 border rounded-lg px-3 py-2 ${medalStyles[w.position]?.border || 'border-white/5'}`}>
-                                                    <span className={`font-bebas text-lg w-8 flex-shrink-0 ${medalStyles[w.position]?.color || 'text-slate-300'}`}>{medalStyles[w.position]?.label || w.position}</span>
-                                                    <span className="font-sans text-sm text-slate-200 truncate">{w.provincia}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                        <h3 className="font-bebas text-3xl md:text-4xl text-white tracking-wide mb-3">Fixture oficial de las Olimpiadas</h3>
+                        <p className="font-sans text-slate-300 text-sm md:text-base leading-relaxed mb-6">Accedé al sistema oficial para consultar la programación deportiva actualizada.</p>
+                        <a href={FIXTURE_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 min-h-[48px] w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-accent text-brand-dark font-sans font-bold hover:bg-brand-accentHover transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent">
+                            Ver fixture<ExternalLink size={18} aria-hidden="true" />
+                        </a>
+                        <p className="font-sans text-slate-400 text-xs mt-3">Se abre en una nueva pestaña.</p>
                     </div>
-                </section>
-            );
-        };
+                </div>
+            </section>
+        );
 
         const AdminResultados = () => {
             const [token, setToken] = useState(() => sessionStorage.getItem('olimpiadas_admin_token') || '');
@@ -1846,10 +1730,10 @@
             }, []);
 
             const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-            const sections = { hero: <Hero />, historia: <Historia />, sedes: <Venues />, disciplinas: <Disciplines />, cronograma: <Schedule />, resultados: <Resultados />, reglamentos: <Rules />, turismo: <Tourism />, autoridades: <Authorities />, sponsors: <Sponsors />, acceso: <CTAInscripcion /> };
+            const sections = { hero: <Hero />, historia: <Historia />, sedes: <Venues />, disciplinas: <Disciplines />, cronograma: <Schedule />, fixture: <Fixture />, reglamentos: <Rules />, turismo: <Tourism />, autoridades: <Authorities />, sponsors: <Sponsors />, acceso: <CTAInscripcion /> };
             const sectionOrder = mobile
-                ? ['hero', 'cronograma', 'sedes', 'disciplinas', 'resultados', 'reglamentos', 'turismo', 'historia', 'autoridades', 'sponsors', 'acceso']
-                : ['hero', 'historia', 'sedes', 'disciplinas', 'cronograma', 'resultados', 'reglamentos', 'turismo', 'autoridades', 'sponsors', 'acceso'];
+                ? ['hero', 'cronograma', 'sedes', 'disciplinas', 'fixture', 'reglamentos', 'turismo', 'historia', 'autoridades', 'sponsors', 'acceso']
+                : ['hero', 'historia', 'sedes', 'disciplinas', 'cronograma', 'fixture', 'reglamentos', 'turismo', 'autoridades', 'sponsors', 'acceso'];
 
             return (
                 <div className={`${mobile ? 'mobile-layout ' : ''}min-h-screen flex flex-col text-slate-100 selection:bg-brand-accent selection:text-brand-dark relative`}>
