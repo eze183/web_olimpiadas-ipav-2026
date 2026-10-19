@@ -879,7 +879,7 @@
                     { title: 'Jornada pedestre, ciclismo y MTB', location: toayComplex, city: 'Toay' },
                     { title: 'Tenis de mesa', location: 'Asociación de Tenis de Mesa (Joaquín Ferro 750)', city: 'Santa Rosa' },
                     { title: 'Tejo', location: toayComplex, city: 'Toay' },
-                    { title: 'Actividad solidaria', location: 'Placita en San Juan e Italia', city: 'Toay' },
+                    { title: 'Actividad solidaria', location: 'Placita en San Juan e Italia', city: 'Toay', mapsUrl: 'https://maps.app.goo.gl/MpwNLuzktkTi9JYM9' },
                     { title: 'Pool', location: 'Pampa Bowling', city: 'Santa Rosa' },
                     { title: 'Truco', location: dinnerVenue, city: 'Santa Rosa' },
                     { title: 'Cena', location: dinnerVenue, city: 'Santa Rosa' }
@@ -1011,8 +1011,8 @@
                                                         </div>
                                                     )}
                                                     <h4 className="text-slate-200 font-sans font-medium leading-tight mb-1">{act.title}</h4>
-                                                    {act.location && (<div className="flex items-start gap-1.5 text-xs font-sans text-slate-400 mt-1 leading-relaxed"><MapPin size={12} className="shrink-0 mt-0.5" aria-hidden="true" /><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${act.location}, ${act.city}, La Pampa`)}`} target="_blank" rel="noopener noreferrer" aria-label={`Ver ${act.location}, ${act.city} en Google Maps`} className="schedule-location-link hover:text-brand-accent hover:underline underline-offset-2 transition-colors rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent">{act.location}<span className="block text-slate-400">{act.city}</span></a></div>)}
-                                                    {mobile && act.location && <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${act.location}, ${act.city}, La Pampa`)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-brand-accent min-h-[44px] self-start">Cómo llegar<ExternalLink size={12} /></a>}
+                                                    {act.location && (<div className="flex items-start gap-1.5 text-xs font-sans text-slate-400 mt-1 leading-relaxed"><MapPin size={12} className="shrink-0 mt-0.5" aria-hidden="true" /><a href={act.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${act.location}, ${act.city}, La Pampa`)}`} target="_blank" rel="noopener noreferrer" aria-label={`Ver ${act.location}, ${act.city} en Google Maps`} className="schedule-location-link hover:text-brand-accent hover:underline underline-offset-2 transition-colors rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent">{act.location}<span className="block text-slate-400">{act.city}</span></a></div>)}
+                                                    {mobile && act.location && <a href={act.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${act.location}, ${act.city}, La Pampa`)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-brand-accent min-h-[44px] self-start">Cómo llegar<ExternalLink size={12} /></a>}
                                                 </div>
                                             </div>
                                         ))}

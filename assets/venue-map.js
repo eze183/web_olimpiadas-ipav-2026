@@ -31,7 +31,7 @@ const getLibrary = () => {
         .catch(error => { libraryPromise = null; throw error; });
     return libraryPromise;
 };
-const directions = venue => 'https://www.google.com/maps/dir/?api=1&destination=' +
+const directions = venue => venue.mapsUrl || 'https://www.google.com/maps/dir/?api=1&destination=' +
     encodeURIComponent(`${venue.name}, ${venue.address}, ${venue.city}, La Pampa, Argentina`);
 
 // OpenStreetMap Carto conserva el trazado completo y sus nombres, sin redibujar ni simplificar calles.
