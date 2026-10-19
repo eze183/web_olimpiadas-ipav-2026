@@ -858,6 +858,7 @@
         const dinnerReception = 'Mini arabitos, sándwiches de miga, brusquetas y hojaldre de pollo';
         const dinnerVenue = 'Círculo de Suboficiales';
         const toayComplex = 'Complejo Recreativo Horacio del Campo';
+        const disciplineMapsUrl = name => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(disciplinesData.find(item => item.name === name).venues[0])}`;
 
         // Cronograma general actualizado según la planilla del 08/10.
         // Por indicación de publicación, solo se muestran los horarios del domingo.
@@ -889,9 +890,9 @@
             {
                 day: 'Martes', date: '03 Nov', id: 'martes',
                 activities: [
-                    { title: 'Natación', location: 'Club All Boys', city: 'Santa Rosa' },
+                    { title: 'Natación', location: 'Club All Boys (Mansilla 456)', city: 'Santa Rosa', mapsUrl: disciplineMapsUrl('Natación') },
                     { title: 'Tenis', location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
-                    { title: 'Bochas', location: 'Club Barrio Fitte', city: 'Santa Rosa' },
+                    { title: 'Bochas', location: 'Club Social y Deportivo Barrio Fitte (Perú 1053)', city: 'Santa Rosa', mapsUrl: disciplineMapsUrl('Bochas') },
                     { title: 'Voley', location: 'Club Sportivo Toay', city: 'Toay' },
                     { title: 'Tejo', location: toayComplex, city: 'Toay' },
                     { title: 'Fútbol', location: toayComplex, city: 'Toay' },
@@ -907,7 +908,7 @@
                 activities: [
                     { title: 'Pádel', location: 'Cristal Pádel Club', city: 'Santa Rosa' },
                     { title: 'Tenis', location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
-                    { title: 'Bochas', location: 'Club Barrio Fitte', city: 'Santa Rosa' },
+                    { title: 'Bochas', location: 'Club Social y Deportivo Barrio Fitte (Perú 1053)', city: 'Santa Rosa', mapsUrl: disciplineMapsUrl('Bochas') },
                     { title: 'Voley', location: 'Club Sportivo Toay', city: 'Toay' },
                     { title: 'Newcom', location: 'Club Guardia del Monte', city: 'Toay' },
                     { title: 'Pool', location: 'Pampa Bowling', city: 'Santa Rosa' },
