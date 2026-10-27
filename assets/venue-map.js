@@ -26,17 +26,20 @@ const getLibrary = () => {
     });
     if (!libraryPromise) libraryPromise = Promise.all([
         load('venue-leaflet-css', 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css', 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=', true),
-        load('venue-leaflet-js', 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js', 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=')
-    ]).then(() => { if (!window.L?.map) throw new Error('Cartografía no disponible.'); return window.L; })
+        load('venue-leaflet-js', 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js', 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo='),
+        load('venue-maplibre-css', 'https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css', 'sha256-V2sIX92Uh6ZaGSFTKMHghsB85b9toJtmazgG09AI2uk=', true),
+        load('venue-maplibre-js', 'https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js', 'sha256-vpYzxNhw4m+zfxz+XFp3GBZnEUAD6hYgeseFDY2ordE=')
+    ]).then(() => load('venue-maplibre-bridge', 'https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js', 'sha256-WezY0rMnedJPG9Jrh8iJDyfkpueFjZk70X5Nh45tJnc='))
+        .then(() => { if (!window.L?.maplibreGL || !window.maplibregl) throw new Error('Cartografía no disponible.'); return window.L; })
         .catch(error => { libraryPromise = null; throw error; });
     return libraryPromise;
 };
 const directions = venue => venue.mapsUrl || 'https://www.google.com/maps/dir/?api=1&destination=' +
     encodeURIComponent(`${venue.name}, ${venue.address}, ${venue.city}, La Pampa, Argentina`);
 
-// OpenStreetMap Carto conserva el trazado completo y sus nombres, sin redibujar ni simplificar calles.
-// Solo se solicitan mosaicos de la vista activa; se respeta la caché normal del navegador.
-function createMap(host, L, source, { expanded, selected, initialView, onSelect, onTileError, onViewChange }) {
+// OpenFreeMap sirve la cartografía de OpenStreetMap sin depender del servidor raster que dejó de responder.
+// Leaflet conserva los controles y las sedes; MapLibre dibuja las calles y sus nombres.
+function createMap(host, L, source, { expanded, selected, initialView, onSelect, onTileError, onBasemapReady, onViewChange }) {
     const latLng = coord => L.latLng(coord[1], coord[0]);
     const bounds = L.latLngBounds(source.venues.map(v => latLng(v.coord)));
     const map = L.map(host, { zoomControl: false, attributionControl: false, keyboard: false,
@@ -44,12 +47,29 @@ function createMap(host, L, source, { expanded, selected, initialView, onSelect,
         boxZoom: false, tapHold: false, minZoom: 10, maxZoom: source.cartography.maxZoom,
         zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false, inertia: false, trackResize: false,
         maxBounds: bounds.pad(2), maxBoundsViscosity: .8 });
-    const tiles = L.tileLayer(source.cartography.tileUrl, { maxZoom: source.cartography.maxZoom, keepBuffer: 0,
-        updateWhenIdle: true, updateWhenZooming: false, detectRetina: false });
-    let tileErrors = 0;
-    tiles.on('loading', () => { tileErrors = 0; });
-    tiles.on('tileerror', () => { tileErrors++; });
-    tiles.on('load', () => onTileError(tileErrors > 0));
+    let basemap, vectorMap, backgroundTimer, destroyed = false;
+    const backgroundError = () => {
+        if (destroyed) return;
+        clearTimeout(backgroundTimer); host.dataset.basemapState = 'error'; onTileError(true);
+    };
+    function loadBackground() {
+        clearTimeout(backgroundTimer); onTileError(false); host.dataset.basemapState = 'loading';
+        backgroundTimer = setTimeout(backgroundError, 15000);
+        try {
+            if (vectorMap) vectorMap.setStyle(source.cartography.styleUrl, { diff: false });
+            else {
+                basemap = L.maplibreGL({ style: source.cartography.styleUrl, interactive: false,
+                    padding: 0, attributionControl: false, renderWorldCopies: false, maxTileCacheSize: 64 }).addTo(map);
+                vectorMap = basemap.getMaplibreMap();
+                vectorMap.on('error', backgroundError);
+                vectorMap.on('idle', () => {
+                    if (destroyed || !vectorMap.isStyleLoaded() || !vectorMap.areTilesLoaded()) return;
+                    clearTimeout(backgroundTimer); host.dataset.basemapState = 'loaded';
+                    onTileError(false); onBasemapReady();
+                });
+            }
+        } catch { backgroundError(); }
+    }
     const markers = document.createElement('div'); markers.className = 'venue-map-markers'; host.append(markers);
     const references = document.createElement('div'); references.className = 'venue-map-references'; host.append(references);
     L.DomEvent.disableClickPropagation(markers);
@@ -133,7 +153,7 @@ function createMap(host, L, source, { expanded, selected, initialView, onSelect,
         else { overview = false; map.setView(latLng(view.center), view.zoom, { animate: false }); draw(); }
     };
     map.on('move zoom', draw).on('dragstart', () => { overview = false; });
-    restore(initialView); tiles.addTo(map);
+    restore(initialView); loadBackground();
     function layout() {
         const size = `${host.clientWidth}:${host.clientHeight}`;
         if (size === lastSize || !host.clientWidth || !host.clientHeight) return;
@@ -153,23 +173,24 @@ function createMap(host, L, source, { expanded, selected, initialView, onSelect,
         zoomBy(factor) { overview = false; map.setZoom(map.getZoom() + (factor > 1 ? 1 : -1), { animate: false }); },
         reset,
         restore,
-        reload() { tiles.redraw(); },
-        destroy() { observer.disconnect(); tiles.off(); map.off(); map.remove(); markers.remove(); references.remove(); delete host.dataset.mapZoom; delete host.dataset.mapCenter; }
+        reload: loadBackground,
+        destroy() { destroyed = true; clearTimeout(backgroundTimer); observer.disconnect(); vectorMap?.off('error', backgroundError); map.off(); map.remove(); markers.remove(); references.remove(); delete host.dataset.mapZoom; delete host.dataset.mapCenter; delete host.dataset.basemapState; }
     };
 }
 
 function MapCanvas({ data, selected, expanded, active, viewRef, onSelect }) {
     const host = useRef(null), engine = useRef(null), selectRef = useRef(onSelect), lastSelected = useRef(selected), activeRef = useRef(active), lastActive = useRef(active);
-    const [error, setError] = useState(false), [tileError, setTileError] = useState(false), [ready, setReady] = useState(false), [attempt, setAttempt] = useState(0);
+    const [error, setError] = useState(false), [tileError, setTileError] = useState(false), [backgroundLoading, setBackgroundLoading] = useState(true), [ready, setReady] = useState(false), [attempt, setAttempt] = useState(0);
     selectRef.current = onSelect; activeRef.current = active;
     useEffect(() => {
         let cancelled = false;
-        setError(false); setTileError(false); setReady(false);
+        setError(false); setTileError(false); setBackgroundLoading(true); setReady(false);
         getLibrary().then(L => {
             if (cancelled) return;
             engine.current = createMap(host.current, L, data, { expanded, selected, initialView: viewRef.current,
                 onViewChange: view => { if (activeRef.current) viewRef.current = view; },
-                onSelect: id => selectRef.current(id), onTileError: failed => { if (!cancelled) setTileError(failed); } });
+                onSelect: id => selectRef.current(id), onBasemapReady: () => { if (!cancelled) setBackgroundLoading(false); },
+                onTileError: failed => { if (!cancelled) { setTileError(failed); if (failed) setBackgroundLoading(false); } } });
             setReady(true);
         }).catch(() => { if (!cancelled) setError(true); });
         return () => { cancelled = true; engine.current?.destroy(); engine.current = null; };
@@ -190,9 +211,13 @@ function MapCanvas({ data, selected, expanded, active, viewRef, onSelect }) {
             h('button', { type: 'button', 'aria-label': 'Alejar mapa', onClick: () => engine.current?.zoomBy(1 / 1.7) }, h(Minus, { size: 20, 'aria-hidden': true })),
             h('button', { type: 'button', 'aria-label': 'Ver todas las sedes', onClick: () => engine.current?.reset() }, h(RotateCcw, { size: 17, 'aria-hidden': true }))),
         ready && tileError && h('div', { className: 'venue-map-tile-error', role: 'alert' },
-            h('span', null, 'Parte del fondo no cargó. Las sedes siguen disponibles.'),
-            h('button', { type: 'button', onClick: () => { setTileError(false); engine.current?.reload(); } }, 'Reintentar fondo')),
-        h('div', { className: 'venue-map-attribution' }, h('a', { href: 'https://www.openstreetmap.org/copyright', target: '_blank', rel: 'noopener noreferrer' }, '© OpenStreetMap'))
+            h('span', null, 'No se pudo cargar el fondo. Las sedes y Cómo llegar siguen disponibles.'),
+            h('button', { type: 'button', onClick: () => { setTileError(false); setBackgroundLoading(true); engine.current?.reload(); } }, 'Reintentar fondo')),
+        ready && backgroundLoading && !tileError && h('div', { className: 'venue-map-background-loading', role: 'status' }, 'Cargando calles del mapa…'),
+        h('div', { className: 'venue-map-attribution' },
+            h('a', { href: 'https://openfreemap.org/', target: '_blank', rel: 'noopener noreferrer' }, 'OpenFreeMap'), ' · ',
+            h('a', { href: 'https://www.openmaptiles.org/', target: '_blank', rel: 'noopener noreferrer' }, '© OpenMapTiles'), ' · ',
+            h('a', { href: 'https://www.openstreetmap.org/copyright', target: '_blank', rel: 'noopener noreferrer' }, '© OpenStreetMap'))
     );
 }
 
