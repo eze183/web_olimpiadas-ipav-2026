@@ -333,13 +333,13 @@
                 <div id={id} hidden={!open}>{children}</div>
             </div>;
         };
-        const MobileDialog = ({ children, onClose, label }) => {
+        const MobileDialog = ({ children, onClose, label, forceModal = false }) => {
             const mobile = useMobileLayout();
             const dialogRef = useRef(null);
             const closeRef = useRef(onClose);
             closeRef.current = onClose;
             useEffect(() => {
-                if (!mobile) return;
+                if (!mobile && !forceModal) return;
                 const previousFocus = document.activeElement;
                 const previousOverflow = document.body.style.overflow;
                 const root = document.getElementById('root');
@@ -361,9 +361,9 @@
                     root.inert = false;
                     previousFocus?.focus();
                 };
-            }, [mobile]);
-            if (!mobile) return <>{children}</>;
-            return createPortal(<div ref={dialogRef} role="dialog" aria-modal="true" aria-label={label} className="mobile-dialog fixed inset-0 z-[70]">
+            }, [mobile, forceModal]);
+            if (!mobile && !forceModal) return <>{children}</>;
+            return createPortal(<div ref={dialogRef} role="dialog" aria-modal="true" aria-label={label} className={`${mobile ? 'mobile-dialog' : 'route-dialog'} fixed inset-0 z-[70]`}>
                 {children}
                 <button data-dialog-close aria-label="Cerrar ventana" onClick={onClose} className="fixed top-3 right-4 z-[80] w-11 h-11 flex items-center justify-center rounded-full bg-slate-800 text-white border border-white/20 shadow-lg"><X size={22} /></button>
             </div>, document.body);
@@ -736,14 +736,14 @@
             { name: 'Beach Voley', icon: <Waves size={32} />, categories: ['Femenino', 'Masculino'], venues: ['Complejo Recreativo Municipal Horacio del Campo (Bv. Brown y 13 de Caballería, Toay)'], image: 'https://i.ibb.co/mV66vGf3/BEACH-VOLLEY.png' },
             { name: 'Básquet (3x3 y 5x5)', icon: <Dribbble size={32} />, categories: ['Masculino'], venues: ['Polideportivo Butaló (S. Álvarez 300, Santa Rosa)'], image: 'https://i.ibb.co/gbktBGLs/BASQUET.png' },
             { name: 'Natación', icon: <Waves size={32} />, categories: ['Masculino', 'Femenino'], venues: ['Club All Boys (Mansilla 456, Santa Rosa)'], image: 'https://i.ibb.co/s9153vp1/NATACION-02.png' },
-            { name: 'MTB', icon: <Bike size={32} />, categories: ['Masculino', 'Femenino'], venues: ['Complejo Recreativo Municipal Horacio del Campo (Bv. Brown y 13 de Caballería, Toay)'], image: 'https://i.ibb.co/Wvb2p7RW/MOUNTAIN-02.png' },
-            { name: 'Running', icon: <Activity size={32} />, categories: ['3K Femenino', '3K Masculino Veterano', '5K Masculino Libres'], venues: ['Complejo Recreativo Municipal Horacio del Campo (Bv. Brown y 13 de Caballería, Toay)'], image: 'https://i.ibb.co/yBRFCZhz/RUNNING.png' },
+            { name: 'MTB', icon: <Bike size={32} />, categories: ['Masculino', 'Femenino'], venues: ['Complejo Recreativo Municipal Horacio del Campo (Bv. Brown y 13 de Caballería, Toay)'], image: 'https://i.ibb.co/Wvb2p7RW/MOUNTAIN-02.png', routes: [{"title":"MTB · 6 km","image":"assets/recorridos/mtb-6-km.jpg","description":"2 vueltas de 3 km, en el sentido de las flechas."}] },
+            { name: 'Running', icon: <Activity size={32} />, categories: ['3K Femenino', '3K Masculino Veterano', '5K Masculino Libres'], venues: ['Complejo Recreativo Municipal Horacio del Campo (Bv. Brown y 13 de Caballería, Toay)'], image: 'https://i.ibb.co/yBRFCZhz/RUNNING.png', routes: [{"title":"Running · 3 km","image":"assets/recorridos/running-3-km.jpg","description":"Femenino y masculino veterano. 2 vueltas de 1,5 km, en el sentido de las flechas."},{"title":"Running · 5 km","image":"assets/recorridos/running-5-km.jpg","description":"2 vueltas de 2,5 km, en el sentido de las flechas."}] },
             { name: 'Truco', icon: <Users size={32} />, categories: ['Tríos'], venues: ['Círculo de Sub Oficiales y Agentes (Martín Luther King 2245, Santa Rosa)'], image: 'https://i.ibb.co/qYpXnfLL/TRUCO02.png' },
             { name: 'Tenis de Mesa', icon: <CircleDot size={32} />, categories: ['Single Femenino', 'Single Masculino', 'Dobles Libres'], venues: ['Asociación de Tenis de Mesa (Joaquín Ferro 750, Santa Rosa)'], image: 'https://i.ibb.co/5XS4MB5r/PING-PONG.png' },
             { name: 'Padel', icon: <Target size={32} />, categories: ['Masculino', 'Femenino'], venues: ['Cristal Padel (M. Varela 1671, Santa Rosa)'], image: 'https://i.ibb.co/7xHTQLk2/PADEL.png' },
             { name: 'Pesca', icon: <Fish size={32} />, categories: ['Libres', 'Por equipos'], venues: ['Club Náutico, Laguna Don Tomás, Santa Rosa'], image: 'https://i.ibb.co/HJDYBN6/PESCA.png' },
             { name: 'Newcom', icon: <Users size={32} />, categories: ['+40'], venues: ['Club Guardia del Monte (Av. 9 de Julio y Bv. Brown, Toay)'], image: 'https://i.ibb.co/8D9Rh48C/NEWCOM.png' },
-            { name: 'Ciclismo Calle', icon: <Bike size={32} />, categories: ['Masculino', 'Femenino'], venues: ['Complejo Recreativo Municipal Horacio del Campo (Bv. Brown y 13 de Caballería, Toay)'], image: 'https://i.ibb.co/V0xCZST2/CICLISMO-RUTA.png' },
+            { name: 'Ciclismo Calle', icon: <Bike size={32} />, categories: ['Masculino', 'Femenino'], venues: ['Complejo Recreativo Municipal Horacio del Campo (Bv. Brown y 13 de Caballería, Toay)'], image: 'https://i.ibb.co/V0xCZST2/CICLISMO-RUTA.png', routes: [{"title":"Ciclismo de calle · 12 km","image":"assets/recorridos/ciclismo-calle-12-km.jpg","description":"2 vueltas de 6 km, en el sentido de las flechas."}] },
             { name: 'Tenis', icon: <Activity size={32} />, categories: ['Masculino', 'Femenino'], venues: ['Centro Empleado de Comercio (México 1810, Santa Rosa)'], image: 'https://i.ibb.co/21XR5SfG/TENIS.png' },
             { name: 'Bochas', icon: <CircleDot size={32} />, categories: ['Tríos'], venues: ['Club Social y Deportivo Barrio Fitte (Perú 1053, Santa Rosa)'], mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Per%C3%BA%201053%2C%20Santa%20Rosa%2C%20La%20Pampa%2C%20Argentina', image: 'https://i.ibb.co/Xf4HM6My/BOCHAS.png' },
             { name: 'Tejo', icon: <Target size={32} />, categories: ['Caballeros', 'Damas', 'Mixto'], venues: ['Complejo Recreativo Municipal Horacio del Campo (Bv. Brown y 13 de Caballería, Toay)'], image: 'https://i.ibb.co/zVYvbD7B/TEJO.png' },
@@ -795,7 +795,7 @@
                                         <img src={optimizeImg(item.image, 250)} alt={item.name} loading="lazy" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out" />
                                     </div>
                                     <h3 className="font-bebas text-2xl text-slate-300 group-hover:text-white text-center tracking-wide relative z-10">{item.name}</h3>
-                                    {mobile && <span className="text-[11px] text-brand-accent relative z-10 text-center">Ver categorías y sede</span>}
+                                    {(mobile || item.routes) && <span className="text-[11px] text-brand-accent relative z-10 text-center">{item.routes ? (mobile ? 'Categorías, sede y recorridos' : 'Ver recorridos') : 'Ver categorías y sede'}</span>}
                                 </div>
                             ))}
                         </div>
@@ -804,11 +804,11 @@
                     
                     {/* Modal para Disciplina */}
                     {selectedDiscipline && (
-                        <MobileDialog label={selectedDiscipline.name} onClose={() => setSelectedDiscipline(null)}>
+                        <MobileDialog label={selectedDiscipline.name} onClose={() => setSelectedDiscipline(null)} forceModal={!!selectedDiscipline.routes}>
                         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
                             <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setSelectedDiscipline(null)}></div>
-                            <div className="relative bg-slate-900 w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl animate-fade-in-up border border-white/10">
-                                <button aria-label="Cerrar" onClick={() => setSelectedDiscipline(null)} className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-white hover:text-black transition-colors"><X size={20} /></button>
+                            <div className={`relative bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl animate-fade-in-up border border-white/10 ${selectedDiscipline.routes ? 'max-h-[calc(100dvh-32px)] overflow-y-auto overscroll-contain' : 'overflow-hidden'}`}>
+                                {!selectedDiscipline.routes && <button aria-label="Cerrar" onClick={() => setSelectedDiscipline(null)} className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-white hover:text-black transition-colors"><X size={20} /></button>}
                                 <div className="dialog-image h-64 md:h-96 relative bg-slate-950 flex items-center justify-center">
                                     <img src={optimizeImg(selectedDiscipline.image, 900)} alt={selectedDiscipline.name} loading="lazy" className="w-full h-full object-contain" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent pointer-events-none"></div>
@@ -846,6 +846,19 @@
                                             ))}
                                         </ul>
                                     </div>
+                                    {selectedDiscipline.routes && <div className="discipline-routes md:col-span-2 min-w-0 border-t border-white/10 pt-6">
+                                        <h4 className="text-brand-accent font-sans font-bold uppercase tracking-wider text-sm mb-3 flex items-center gap-2"><Compass size={16} aria-hidden="true" /> Recorridos oficiales</h4>
+                                        <p className="text-slate-400 text-xs font-sans leading-relaxed mb-4">Tocá la imagen para abrirla en tamaño completo en una nueva pestaña.</p>
+                                        <div className="space-y-6">
+                                            {selectedDiscipline.routes.map(route => <figure key={route.image} className="min-w-0">
+                                                <a href={route.image} target="_blank" rel="noopener noreferrer" aria-label={`Ampliar recorrido de ${route.title}`} className="block rounded-xl overflow-hidden border border-white/10 hover:border-brand-accent/50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent">
+                                                    <img src={route.image} alt={`Recorrido oficial de ${route.title}`} width="1600" height="900" loading="lazy" className="block w-full h-auto" />
+                                                    <span className="flex items-center justify-center gap-2 min-h-[44px] px-3 py-2 bg-slate-800 text-brand-accent font-sans text-xs font-semibold">Ampliar recorrido<ExternalLink size={14} aria-hidden="true" /></span>
+                                                </a>
+                                                <figcaption className="mt-3 font-sans"><p className="text-sm font-semibold text-white">{route.title}</p><p className="text-xs text-slate-300 leading-relaxed mt-1">{route.description}</p></figcaption>
+                                            </figure>)}
+                                        </div>
+                                    </div>}
                                 </div>
                             </div>
                         </div>
