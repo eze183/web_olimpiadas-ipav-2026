@@ -877,7 +877,8 @@
         };
 
         // Cronograma general actualizado según la planilla del 08/10.
-        // Por indicación de publicación, solo se muestran los horarios del domingo.
+        // Horarios deportivos de inicio tomados del fixture público el 27/10/2026.
+        // No se infieren horarios de finalización a partir del último partido programado.
         // Los días 1 a 6 del menú corresponden al domingo 1 al viernes 6 de noviembre.
         const scheduleData = [
             {
@@ -893,12 +894,13 @@
             {
                 day: 'Lunes', date: '02 Nov', id: 'lunes',
                 activities: [
-                    { title: 'Jornada pedestre, ciclismo y MTB', location: toayComplex, city: 'Toay' },
-                    { title: 'Tenis de mesa', location: 'Asociación de Tenis de Mesa (Joaquín Ferro 750)', city: 'Santa Rosa' },
-                    { title: 'Tejo', location: toayComplex, city: 'Toay' },
+                    { title: 'Jornada pedestre, ciclismo y MTB', startTimes: [{"label":"Running","time":"08:30"},{"label":"Ciclismo de calle","time":"10:00"},{"label":"MTB","time":"10:00"}], location: toayComplex, city: 'Toay' },
+                    { title: 'Carrera de obstáculos', time: 'Desde 11:00', location: toayComplex, city: 'Toay' },
+                    { title: 'Tejo', time: 'Desde 14:00', location: toayComplex, city: 'Toay' },
+                    { title: 'Tenis de mesa', startTimes: [{"label":"Single","time":"14:30"},{"label":"Dobles","time":"16:15"}], location: 'Asociación de Tenis de Mesa (Joaquín Ferro 750)', city: 'Santa Rosa' },
                     { title: 'Actividad solidaria', location: 'Placita en San Juan e Italia', city: 'Toay', mapsUrl: 'https://maps.app.goo.gl/MpwNLuzktkTi9JYM9' },
-                    { title: 'Pool', location: 'Pampa Bowling', city: 'Santa Rosa' },
-                    { title: 'Truco', location: dinnerVenue, city: 'Santa Rosa' },
+                    { title: 'Pool', time: 'Desde 18:00', location: 'Pampa Bowling', city: 'Santa Rosa' },
+                    { title: 'Truco', time: 'Desde 19:00', location: dinnerVenue, city: 'Santa Rosa' },
                     { title: 'Cena', location: dinnerVenue, city: 'Santa Rosa' }
                 ],
                 dinner: { starter: 'Canastas caprese', main: 'Milanesa de pollo con puré', dessert: 'Ensalada de frutas' }
@@ -906,15 +908,15 @@
             {
                 day: 'Martes', date: '03 Nov', id: 'martes',
                 activities: [
-                    { title: 'Natación', location: 'Club All Boys (Mansilla 456)', city: 'Santa Rosa', mapsUrl: disciplineMapsUrl('Natación') },
-                    { title: 'Tenis', location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
-                    { title: 'Bochas', location: 'Club Social y Deportivo Barrio Fitte (Perú 1053)', city: 'Santa Rosa', mapsUrl: disciplineMapsUrl('Bochas') },
-                    { title: 'Voley', location: 'Club Sportivo Toay', city: 'Toay' },
-                    { title: 'Tejo', location: toayComplex, city: 'Toay' },
-                    { title: 'Fútbol', location: toayComplex, city: 'Toay' },
-                    { title: 'Beach voley', location: toayComplex, city: 'Toay' },
-                    { title: 'Pool', location: 'Pampa Bowling', city: 'Santa Rosa' },
-                    { title: 'Truco', location: dinnerVenue, city: 'Santa Rosa' },
+                    { title: 'Natación', time: 'Desde 08:00', location: 'Club All Boys (Mansilla 456)', city: 'Santa Rosa', mapsUrl: disciplineMapsUrl('Natación') },
+                    { title: 'Tenis', time: 'Desde 08:00', location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
+                    { title: 'Bochas', time: 'Desde 08:00', location: 'Club Social y Deportivo Barrio Fitte (Perú 1053)', city: 'Santa Rosa', mapsUrl: disciplineMapsUrl('Bochas') },
+                    { title: 'Voley', time: 'Desde 12:00', location: 'Club Sportivo Toay', city: 'Toay' },
+                    { title: 'Fútbol', time: 'Desde 13:00', location: toayComplex, city: 'Toay' },
+                    { title: 'Tejo', time: 'Desde 14:00', location: toayComplex, city: 'Toay' },
+                    { title: 'Beach voley', time: 'Desde 14:00', location: toayComplex, city: 'Toay' },
+                    { title: 'Pool', time: 'Desde 18:00', location: 'Pampa Bowling', city: 'Santa Rosa' },
+                    { title: 'Truco', time: 'Desde 19:00', location: dinnerVenue, city: 'Santa Rosa' },
                     { title: 'Cena y cierre de la actividad solidaria', location: dinnerVenue, city: 'Santa Rosa' }
                 ],
                 dinner: { starter: 'Empanadas de carne y de jamón y queso (una por persona)', main: 'Carré de cerdo con papas, verduras y salsa suave de mostaza', dessert: 'Helado' }
@@ -922,12 +924,12 @@
             {
                 day: 'Miércoles', date: '04 Nov', id: 'miercoles',
                 activities: [
-                    { title: 'Pádel', location: 'Cristal Pádel Club', city: 'Santa Rosa' },
-                    { title: 'Tenis', location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
+                    { title: 'Pádel', time: 'Desde 08:00', location: 'Cristal Pádel Club', city: 'Santa Rosa' },
+                    { title: 'Tenis', startTimes: [{"label":"Single","time":"08:00"},{"label":"Dobles","time":"12:00"}], location: 'Club Centro Empleados de Comercio', city: 'Santa Rosa' },
                     { title: 'Bochas', location: 'Club Social y Deportivo Barrio Fitte (Perú 1053)', city: 'Santa Rosa', mapsUrl: disciplineMapsUrl('Bochas') },
-                    { title: 'Voley', location: 'Club Sportivo Toay', city: 'Toay' },
-                    { title: 'Newcom', location: 'Club Guardia del Monte', city: 'Toay' },
-                    { title: 'Pool', location: 'Pampa Bowling', city: 'Santa Rosa' },
+                    { title: 'Voley', time: 'Desde 12:00', location: 'Club Sportivo Toay', city: 'Toay' },
+                    { title: 'Newcom', time: 'Desde 14:00', location: 'Club Guardia del Monte', city: 'Toay' },
+                    { title: 'Pool', time: 'Desde 18:45', location: 'Pampa Bowling', city: 'Santa Rosa' },
                     { title: 'Truco', location: dinnerVenue, city: 'Santa Rosa' },
                     { title: 'Cena (Olimpeña)', location: dinnerVenue, city: 'Santa Rosa' }
                 ],
@@ -936,11 +938,12 @@
             {
                 day: 'Jueves', date: '05 Nov', id: 'jueves',
                 activities: [
-                    { title: 'Básquet', location: 'Polideportivo Butaló', city: 'Santa Rosa' },
-                    { title: 'Pádel', location: 'Cristal Pádel Club', city: 'Santa Rosa' },
-                    { title: 'Fútbol', location: toayComplex, city: 'Toay' },
-                    { title: 'Beach voley', location: toayComplex, city: 'Toay' },
-                    { title: 'Newcom', location: 'Club Guardia del Monte', city: 'Toay' },
+                    { title: 'Básquet', startTimes: [{"label":"5x5","time":"08:00"},{"label":"3x3","time":"12:30"}], location: 'Polideportivo Butaló', city: 'Santa Rosa' },
+                    { title: 'Pádel', time: 'Desde 08:00', location: 'Cristal Pádel Club', city: 'Santa Rosa' },
+                    { title: 'Fútbol', time: 'Desde 13:00', location: toayComplex, city: 'Toay' },
+                    { title: 'Beach voley', time: 'Desde 14:00', location: toayComplex, city: 'Toay' },
+                    { title: 'Newcom', time: 'Desde 14:00', location: 'Club Guardia del Monte', city: 'Toay' },
+                    { title: 'Pool', time: 'Desde 18:00', location: 'Pampa Bowling', city: 'Santa Rosa' },
                     { title: 'Cena (fiesta temática: Argentina)', location: dinnerVenue, city: 'Santa Rosa' }
                 ],
                 dinner: { starter: 'Mix de fiambres con papa y huevo', main: 'Milanesa de carne con ensalada', dessert: 'Helado' }
@@ -948,7 +951,7 @@
             {
                 day: 'Viernes', date: '06 Nov', id: 'viernes',
                 activities: [
-                    { title: 'Pesca', location: 'Laguna Don Tomás', city: 'Santa Rosa' },
+                    { title: 'Pesca', time: 'Desde 08:00', location: 'Laguna Don Tomás', city: 'Santa Rosa' },
                     { title: 'Tarde libre' },
                     { title: 'Cena', location: dinnerVenue, city: 'Santa Rosa' }
                 ],
@@ -996,7 +999,8 @@
                     <div className="container mx-auto px-4 mb-24">
                         <div className="mb-8 text-center font-sans">
                             <p className="text-slate-300 text-sm leading-relaxed">Actividades, sedes y menú de cada cena, del 1 al 6 de noviembre.</p>
-                            <p className="text-slate-400 text-xs mt-2 leading-relaxed">Solo el domingo 1/11 tiene horarios confirmados. Los horarios de los demás días se informarán próximamente.</p>
+                            <p className="text-slate-400 text-xs mt-2 leading-relaxed">Horarios deportivos de inicio según el fixture oficial, consultado el 27/10/2026. No indican la finalización de la actividad.</p>
+                            <p className="text-slate-400 text-xs mt-2 leading-relaxed">Los horarios no publicados figuran a confirmar. Consultá el <a href="https://olimpicosipv.wnpower.host/publico" target="_blank" rel="noopener noreferrer" className="text-brand-accent underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent">fixture oficial actualizado</a> para ver cada encuentro.</p>
                             <p className="text-slate-400 text-xs mt-2">Abrí “Menú de la cena” en cada día para ver recepción, entrada, principal y postre.</p>
                         </div>
                         {mobile ? <div className="mb-5">
@@ -1027,6 +1031,10 @@
                                                             {act.time}
                                                         </div>
                                                     )}
+                                                    {act.startTimes && <ul className="space-y-1 mb-1" aria-label="Horarios de inicio por modalidad">
+                                                        {act.startTimes.map(start => <li key={start.label} className="flex items-center gap-2 text-xs font-sans font-semibold text-slate-300"><Clock size={12} className="shrink-0" aria-hidden="true" /><span>{start.label}: desde {start.time}</span></li>)}
+                                                    </ul>}
+                                                    {!act.time && !act.startTimes && act.title !== 'Tarde libre' && <p className="text-xs font-sans text-slate-400 mb-1">Horario a confirmar</p>}
                                                     <h4 className="text-slate-200 font-sans font-medium leading-tight mb-1">{act.title}</h4>
                                                     {act.location && (<div className="flex items-start gap-1.5 text-xs font-sans text-slate-400 mt-1 leading-relaxed"><MapPin size={12} className="shrink-0 mt-0.5" aria-hidden="true" /><a href={act.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${act.location}, ${act.city}, La Pampa`)}`} target="_blank" rel="noopener noreferrer" aria-label={`Ver ${act.location}, ${act.city} en Google Maps`} className="schedule-location-link hover:text-brand-accent hover:underline underline-offset-2 transition-colors rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent">{act.location}<span className="block text-slate-400">{act.city}</span></a></div>)}
                                                     {mobile && act.location && <a href={act.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${act.location}, ${act.city}, La Pampa`)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-brand-accent min-h-[44px] self-start">Cómo llegar<ExternalLink size={12} /></a>}
